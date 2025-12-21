@@ -25,6 +25,16 @@
             </a>
         </div>
 
+         <!-- Toggle Button -->
+                <button @click="sidebarOpen = !sidebarOpen"
+                        class="absolute -right-3 top-20 bg-white border border-black-300 rounded-full p-1.5 shadow-sm hover:shadow-md transition-shadow z-10">
+                    <svg class="w-4 h-4 text-gray-600 transition-transform duration-300"
+                         :class="sidebarOpen ? '' : 'rotate-180'"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+                    </svg>
+                </button>
+
         <nav class="p-3 space-y-1 text-sm">
             <a href="{{ route('dashboard') }}"
                class="block px-3 py-2 rounded {{ request()->routeIs('dashboard') ? 'bg-gray-100 font-semibold' : 'hover:bg-gray-50' }}">
