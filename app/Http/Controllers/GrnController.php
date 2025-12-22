@@ -13,8 +13,14 @@ class GrnController extends Controller
      private function nextGrnNo(): string
     {
         $last = Grn::orderByDesc('id')->value('grn_no'); // GRN-000012
-        $num = $last ? (int)preg_replace('/\D+/', '', $last) : 0;
-        return 'GRN-' . str_pad((string)($num + 1), 6, '0', STR_PAD_LEFT);
+
+        if (!$last) {
+            return 'GRN-000001';
+        }
+
+        $number = (int) substr($last, 4); // get numeric part
+        $number++;
+        return 'GRN-' . str_pad($number, 6, '0', STR_PAD_LEFT);
     }
 
     public function index()

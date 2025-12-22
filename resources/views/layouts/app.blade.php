@@ -155,7 +155,7 @@
 
                     <div x-show="inventoryOpen" x-collapse
                          class="mt-1 space-y-1 overflow-hidden">
-                        <a href="{{ url('/po') }}"
+                        <a href="{{ url('/po.index') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
@@ -163,7 +163,7 @@
                                 PO
                             </span>
                         </a>
-                        <a href="{{ url('/grn') }}"
+                        <a href="{{ url('/grn.index') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
