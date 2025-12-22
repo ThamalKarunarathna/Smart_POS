@@ -178,18 +178,18 @@ class OrderController extends Controller
     }
 
     private function nextOrderNo(): string
-{
-    $last = \App\Models\Order::orderByDesc('id')->value('order_no'); // ex: ORD-000001
+    {
+        $last = \App\Models\Order::orderByDesc('id')->value('order_no'); // ex: ORD-000001
 
-    if (!$last) {
-        return 'ORD-000001';
+        if (!$last) {
+            return 'ORD-000001';
+        }
+
+        $num = (int) str_replace('ORD-', '', $last);
+        $num++;
+
+        return 'ORD-' . str_pad((string)$num, 6, '0', STR_PAD_LEFT);
     }
-
-    $num = (int) str_replace('ORD-', '', $last);
-    $num++;
-
-    return 'ORD-' . str_pad((string)$num, 6, '0', STR_PAD_LEFT);
-}
 
     private function recalculateTotals(int $orderId): void
     {
