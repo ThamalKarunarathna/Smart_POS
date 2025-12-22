@@ -48,8 +48,8 @@
     </script>
 </head>
 
-<body class="font-sans antialiased bg-gray-50" x-data="{ inventoryOpen: false }">
-<div class="min-h-screen flex" x-data x-bind:class="$store.sidebar.collapsed ? 'lg:pl-20' : 'lg:pl-64'">
+<body class="font-sans antialiased bg-gray-50" x-data="{ inventoryOpen: false, financeOpen: false, reportopen: false }">
+<div class="min-h-screen flex" x-data x-bind:class="$store.sidebar.collapsed ? 'lg:pl-30' : 'lg:pl-64'">
 
     {{-- Sidebar --}}
     <aside class="fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 shadow-lg sidebar-transition"
@@ -155,7 +155,7 @@
 
                     <div x-show="inventoryOpen" x-collapse
                          class="mt-1 space-y-1 overflow-hidden">
-                        <a href="{{ url('/po.index') }}"
+                        <a href="{{ url('/inventory/po') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
@@ -163,7 +163,15 @@
                                 PO
                             </span>
                         </a>
-                        <a href="{{ url('/grn.index') }}"
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                PO Approval
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
@@ -171,21 +179,170 @@
                                 GRN
                             </span>
                         </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                GRN Approval
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Supplier
+                            </span>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Finance dropdown --}}
+                <div>
+                    <button type="button"
+                            @click="financeOpen = !financeOpen"
+                            class="w-full flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                            :class="request()->is('po*') || request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                        </svg>
+                        <span class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                              :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                            Finance
+                        </span>
+                        <svg class="w-4 h-4 ml-auto flex-shrink-0 transform transition"
+                             :class="financeOpen ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+
+                    <div x-show="financeOpen" x-collapse
+                         class="mt-1 space-y-1 overflow-hidden">
+                        <a href="{{ url('/inventory/po') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Chart Of Accounts
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Bill Entry
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Payment Vouchers
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Genaral Ledger
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Balance Sheet
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                P & L
+                            </span>
+                        </a>
                     </div>
                 </div>
 
                 {{-- Report --}}
-                <a href="{{ url('/reports') }}"
-                   class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                   :class="request()->is('reports*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div>
+                    <button type="button"
+                            @click="reportopen = !reportopen"
+                            class="w-full flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                            :class="request()->is('po*') || request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
-                    <span class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
-                          :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
-                        Reports
-                    </span>
-                </a>
+                        <span class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                              :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                            Reports
+                        </span>
+                        <svg class="w-4 h-4 ml-auto flex-shrink-0 transform transition"
+                             :class="reportopen ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+
+                    <div x-show="reportopen" x-collapse
+                         class="mt-1 space-y-1 overflow-hidden">
+                        <a href="{{ url('/inventory/po') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Customer Detail
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Sales Report
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Stock Report
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                               Customer Outstanding
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Supplier Payable
+                            </span>
+                        </a>
+
+                    </div>
+                </div>
+
+
+
+
+
             @endif
         </nav>
 
