@@ -7,6 +7,7 @@ use App\Http\Controllers\ItemPriceController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PurchaseOrderController;
 
 
 
@@ -58,6 +59,23 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::patch('/pos/orders/{id}/cancel', [OrderController::class, 'cancel']);
     Route::get('/pos/orders/{id}/print', [OrderController::class, 'print']);
+
+    //PO Routes
+    Route::get('/inventory/po', [PurchaseOrderController::class, 'index'])->name('po.index');
+    Route::get('/inventory/po/create', [PurchaseOrderController::class, 'create'])->name('po.create');
+    Route::post('/inventory/po', [PurchaseOrderController::class, 'store'])->name('po.store');
+
+    Route::get('/inventory/po/{po}', [PurchaseOrderController::class, 'show'])->name('po.show');
+    Route::get('/inventory/po/{po}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
+    Route::put('/inventory/po/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
+    Route::delete('/inventory/po/{po}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
+
+    // PO Status flow
+    Route::post('/inventory/po/{po}/submit', [PurchaseOrderController::class, 'submit'])->name('po.submit');
+
+    // PO Approval
+    Route::post('/inventory/po/{po}/approve', [PurchaseOrderController::class, 'approve'])->name('po.approve');
+    Route::post('/inventory/po/{po}/reject', [PurchaseOrderController::class, 'reject'])->name('po.reject');
 });
 
 require __DIR__.'/auth.php';
