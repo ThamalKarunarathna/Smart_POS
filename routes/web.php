@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\GrnController;
 
 
 
@@ -76,6 +77,24 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // PO Approval
     Route::post('/inventory/po/{po}/approve', [PurchaseOrderController::class, 'approve'])->name('po.approve');
     Route::post('/inventory/po/{po}/reject', [PurchaseOrderController::class, 'reject'])->name('po.reject');
+
+
+    // GRN
+    Route::get('/inventory/grn', [GrnController::class, 'index'])->name('grn.index');
+
+    // Create GRN against approved PO
+    Route::get('/inventory/po/{po}/grn/create', [GrnController::class, 'create'])->name('grn.create');
+    Route::post('/inventory/po/{po}/grn', [GrnController::class, 'store'])->name('grn.store');
+
+    Route::get('/inventory/grn/{grn}', [GrnController::class, 'show'])->name('grn.show');
+    Route::get('/inventory/grn/{grn}/edit', [GrnController::class, 'edit'])->name('grn.edit');
+    Route::put('/inventory/grn/{grn}', [GrnController::class, 'update'])->name('grn.update');
+    Route::delete('/inventory/grn/{grn}', [GrnController::class, 'destroy'])->name('grn.destroy');
+
+    // Submit + approve
+    Route::post('/inventory/grn/{grn}/submit', [GrnController::class, 'submit'])->name('grn.submit');
+    Route::post('/inventory/grn/{grn}/approve', [GrnController::class, 'approve'])->name('grn.approve');
+    Route::post('/inventory/grn/{grn}/reject', [GrnController::class, 'reject'])->name('grn.reject');
 });
 
 require __DIR__.'/auth.php';
