@@ -179,7 +179,7 @@ class PurchaseOrderController extends Controller
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'PO approved.');
+        return redirect()->route('po.approval')->with('success', 'PO approved.');
     }
 
     public function reject(PurchaseOrder $po)

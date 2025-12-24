@@ -62,6 +62,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/pos/orders/{id}/cancel', [OrderController::class, 'cancel']);
     Route::get('/pos/orders/{id}/print', [OrderController::class, 'print']);
 
+    // PO Approval Route
+    Route::get('/inventory/po/approval', [PurchaseOrderController::class, 'approvalIndex'])->name('po.approval');
+
     // PO Routes
     Route::get('/inventory/po', [PurchaseOrderController::class, 'index'])->name('po.index');
     Route::get('/inventory/po/create', [PurchaseOrderController::class, 'create'])->name('po.create');
@@ -104,6 +107,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit']);
     Route::put('/suppliers/{id}', [SupplierController::class, 'update']);
     Route::delete('/suppliers/{id}', [SupplierController::class, 'destroy']);
+
+
+
 });
 
 require __DIR__.'/auth.php';
