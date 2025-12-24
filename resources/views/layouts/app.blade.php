@@ -205,8 +205,10 @@
                             class="w-full flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                             :class="request()->is('po*') || request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                        </svg>
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2m4-3h-6a2 2 0 000 4h6v-4z"/>
+</svg>
+
                         <span class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
                               :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
                             Finance

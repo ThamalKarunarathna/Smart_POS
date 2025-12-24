@@ -30,6 +30,9 @@ class CustomerController extends Controller
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'vat_reg_no' => 'nullable|string|max:100',
+            'vat_applicable' => 'boolean',
+            'sscl_applicable' => 'boolean',
         ]);
 
         Customer::create($validated + ['is_active' => true]);
@@ -55,6 +58,10 @@ class CustomerController extends Controller
             'phone'         => 'nullable|string|max:30',
             'email'         => 'nullable|email|max:255',
             'address'       => 'nullable|string|max:255',
+            'is_active'     => 'boolean',
+            'vat_reg_no'    => 'nullable|string|max:100',
+            'vat_applicable'=> 'boolean',
+            'sscl_applicable'=> 'boolean',
         ]);
 
         $customer->update($validated);

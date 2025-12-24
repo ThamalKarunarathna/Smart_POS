@@ -16,5 +16,8 @@ class Customer extends Model
         'email',
         'address',
         'is_active',
+        'vat_reg_no',
+        'vat_applicable',
+        'sscl_applicable',
     ];
 }

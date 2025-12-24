@@ -209,6 +209,63 @@
                         </div>
                     </div>
 
+                    <!-- Checkbox Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- VAT Applicable -->
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <input id="vat_applicable"
+                                       name="vat_applicable"
+                                       type="checkbox"
+                                       value="1"
+                                       {{ old('vat_applicable', $customer->vat_applicable) ? 'checked' : '' }}
+                                       class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-colors cursor-pointer"
+                                       onchange="toggleVatField(this)">
+                                <label for="vat_applicable" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
+                                    VAT Applicable
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500">Check if VAT is applicable for this customer</p>
+
+                            <!-- VAT Registration Number (Conditional) -->
+                            <div id="vat_reg_no_container" class="{{ old('vat_applicable', $customer->vat_applicable) ? 'block' : 'hidden' }} space-y-2">
+                                <label for="vat_reg_no" class="block text-sm font-medium text-gray-700">
+                                    VAT Registration Number
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                    </div>
+                                    <input id="vat_reg_no"
+                                           name="vat_reg_no"
+                                           type="text"
+                                           value="{{ old('vat_reg_no', $customer->vat_reg_no) }}"
+                                           class="pl-10 w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="e.g., GB123456789">
+                                </div>
+                                <p class="text-xs text-gray-500">Enter the VAT registration number if applicable</p>
+                            </div>
+                        </div>
+
+                        <!-- SSCL Applicable -->
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <input id="sscl_applicable"
+                                       name="sscl_applicable"
+                                       type="checkbox"
+                                       value="1"
+                                       {{ old('sscl_applicable', $customer->sscl_applicable) ? 'checked' : '' }}
+                                       class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-colors cursor-pointer">
+                                <label for="sscl_applicable" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
+                                    SSCL Applicable
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500">Check if SSCL is applicable for this customer</p>
+                        </div>
+                    </div>
+
                     <!-- Additional Notes (Optional) -->
                     <div class="space-y-2">
                         <label for="notes" class="block text-sm font-medium text-gray-700">
@@ -301,6 +358,35 @@
     function confirmDelete() {
         return confirm('Are you sure you want to delete this customer? This action cannot be undone and will remove all associated data.');
     }
+
+    function toggleVatField(checkbox) {
+        const vatRegNoContainer = document.getElementById('vat_reg_no_container');
+        if (checkbox.checked) {
+            vatRegNoContainer.classList.remove('hidden');
+            vatRegNoContainer.classList.add('block');
+        } else {
+            vatRegNoContainer.classList.remove('block');
+            vatRegNoContainer.classList.add('hidden');
+        }
+    }
+
+    function resetForm() {
+        // Reset the form
+        document.querySelector('form').reset();
+
+        // Hide the VAT registration number field after reset
+        const vatRegNoContainer = document.getElementById('vat_reg_no_container');
+        vatRegNoContainer.classList.remove('block');
+        vatRegNoContainer.classList.add('hidden');
+    }
+
+    // Initialize the form state on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const vatCheckbox = document.getElementById('vat_applicable');
+        if (vatCheckbox) {
+            toggleVatField(vatCheckbox);
+        }
+    });
     </script>
     @endpush
 </x-app-layout>
