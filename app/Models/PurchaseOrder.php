@@ -8,7 +8,7 @@ class PurchaseOrder extends Model
 {
 
      protected $fillable = [
-        'po_no','supplier_id','supplier_name','po_date','status','created_by','approved_by','approved_at'
+        'po_no','supplier_id','supplier_name','po_date','grn_status','status','created_by','approved_by','approved_at'
     ];
 
     public function items()

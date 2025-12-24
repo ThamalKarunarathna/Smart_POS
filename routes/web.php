@@ -83,6 +83,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/inventory/po/{po}/reject', [PurchaseOrderController::class, 'reject'])->name('po.reject');
 
 
+    // GRN Pending PO Route
+    Route::get('/inventory/grn/pending', [GrnController::class, 'pendingIndex'])->name('grn.pending_grn');
+
     // GRN
     Route::get('/inventory/grn', [GrnController::class, 'index'])->name('grn.index');
 

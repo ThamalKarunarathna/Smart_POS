@@ -64,6 +64,8 @@ class GrnController extends Controller
                 $grn->items()->create($row);
             }
 
+           $po->update(attributes: ['grn_status' => 'yes']);
+
             return redirect()->route('grn.show', $grn)->with('success', 'GRN created.');
         });
     }
@@ -73,6 +75,17 @@ class GrnController extends Controller
         $grn->load(['items.item','purchaseOrder']);
         return view('inventory.grn.show', compact('grn'));
     }
+
+      public function pendingIndex()
+{
+    $pos = PurchaseOrder::with('supplier')
+        ->where('status', 'approved')
+        ->where('grn_status', 'no')
+        ->latest()
+        ->paginate(20);
+
+    return view('inventory.grn.pending_grn', compact('pos'));
+}
 
     public function edit(Grn $grn)
     {
@@ -117,7 +130,7 @@ class GrnController extends Controller
         if ($grn->isLocked()) abort(403);
         if ($grn->status !== 'draft') return back()->with('error', 'Only draft can be submitted.');
         $grn->update(['status' => 'pending']);
-        return back()->with('success', 'GRN submitted for approval.');
+        return redirect()->route('grn.index')->with('success', 'GRN submitted for approval.');
     }
 
     public function approve(Grn $grn)
