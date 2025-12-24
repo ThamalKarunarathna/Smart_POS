@@ -25,7 +25,26 @@ class OrderController extends Controller
     public function create()
     {
         $customers = Customer::where('is_active', 1)->orderBy('name')->get();
-        $items = Item::where('status', 1)->orderBy('name')->get();
+        $items = Item::query()
+    ->where('status', 1)
+    ->orderBy('name')
+    ->select('items.*')
+    ->addSelect([
+        // latest active selling price
+        'latest_price' => ItemPrice::query()
+            ->select('selling_price')
+            ->whereColumn('item_prices.item_id', 'items.id')
+            ->where('item_prices.is_active', 1)
+            ->orderByDesc('item_prices.effective_from')
+            ->limit(1),
+
+        // available stock = SUM(qty_in) - SUM(qty_out)
+        'available_stock' => DB::table('stock_ledgers')
+            ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0)')
+            ->whereColumn('stock_ledgers.item_id', 'items.id')
+            ->limit(1),
+    ])
+    ->get();
 
         return view('pos.orders.create', compact('customers', 'items'));
     }
@@ -93,7 +112,26 @@ class OrderController extends Controller
         }
 
         $customers = Customer::where('is_active', 1)->orderBy('name')->get();
-        $items = Item::where('status', 1)->orderBy('name')->get();
+       $items = Item::query()
+    ->where('status', 1)
+    ->orderBy('name')
+    ->select('items.*')
+    ->addSelect([
+        // latest active selling price
+        'latest_price' => ItemPrice::query()
+            ->select('selling_price')
+            ->whereColumn('item_prices.item_id', 'items.id')
+            ->where('item_prices.is_active', 1)
+            ->orderByDesc('item_prices.effective_from')
+            ->limit(1),
+
+        // available stock = SUM(qty_in) - SUM(qty_out)
+        'available_stock' => DB::table('stock_ledgers')
+            ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0)')
+            ->whereColumn('stock_ledgers.item_id', 'items.id')
+            ->limit(1),
+    ])
+    ->get();
 
         return view('pos.orders.edit', compact('order', 'customers', 'items'));
     }
