@@ -65,6 +65,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // PO Approval Route
     Route::get('/inventory/po/approval', [PurchaseOrderController::class, 'approvalIndex'])->name('po.approval');
 
+    // GRN Approval Route
+    Route::get('/inventory/grn/approval', [GrnController::class, 'approvalIndex'])->name('grn.approval');
+
     // PO Routes
     Route::get('/inventory/po', [PurchaseOrderController::class, 'index'])->name('po.index');
     Route::get('/inventory/po/create', [PurchaseOrderController::class, 'create'])->name('po.create');

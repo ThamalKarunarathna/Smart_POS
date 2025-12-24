@@ -29,6 +29,17 @@ class GrnController extends Controller
         return view('inventory.grn.index', compact('grns'));
     }
 
+        public function approvalIndex()
+{
+    $grns = Grn::with('purchaseOrder')
+        ->where('status', 'pending')
+        ->latest()
+        ->paginate(20);
+
+    return view('inventory.grn.approval', compact('grns'));
+}
+
+
     public function create(PurchaseOrder $po)
     {
         if ($po->status !== 'approved') abort(403, 'GRN can only be created for approved PO.');
@@ -157,7 +168,7 @@ class GrnController extends Controller
                 ]);
             }
 
-            return back()->with('success', 'GRN approved and stock updated.');
+            return redirect()->route('grn.approval')->with('success', 'GRN approved and stock updated.');
         });
     }
 

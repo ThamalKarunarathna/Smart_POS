@@ -179,7 +179,7 @@
                                 GRN
                             </span>
                         </a>
-                        <a href="{{ url('/inventory/grn') }}"
+                        <a href="{{ url('/inventory/grn/approval') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"

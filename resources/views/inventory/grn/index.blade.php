@@ -1,11 +1,30 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            GRN List
-        </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    GRN Management
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Goods Received Notes list and management
+                </p>
+            </div>
+            <div class="mt-2 sm:mt-0">
+                <a href="{{ route('grn.pending_grn') }}"
+                   class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-800 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all shadow-sm hover:shadow">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    Pending GRNs
+                </a>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="mb-6">
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Original Pending GRNs Button -->
+            <div class="mb-6">
                 <a href="{{ route('grn.pending_grn') }}"
                    class="inline-flex items-center px-4 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors shadow-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,70 +34,175 @@
                 </a>
             </div>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
+            <!-- Success Message -->
             @if(session('success'))
-                <div class="mb-4 p-3 rounded bg-green-100 text-green-800">
-                    {{ session('success') }}
+                <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+                        </div>
+                    </div>
                 </div>
             @endif
 
-            <div class="bg-white shadow sm:rounded-lg p-4">
+            <!-- Stats Cards -->
+            <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4">
+                    <div class="text-sm font-medium text-indigo-800">Total GRNs</div>
+                    <div class="mt-1 text-2xl font-bold text-gray-900">{{ $grns->total() }}</div>
+                </div>
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-100 rounded-xl p-4">
+                    <div class="text-sm font-medium text-yellow-800">Draft</div>
+                    <div class="mt-1 text-2xl font-bold text-gray-900">
+                        {{ $grns->where('status', 'draft')->count() }}
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-xl p-4">
+                    <div class="text-sm font-medium text-green-800">Approved</div>
+                    <div class="mt-1 text-2xl font-bold text-gray-900">
+                        {{ $grns->where('status', 'approved')->count() }}
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 rounded-xl p-4">
+                    <div class="text-sm font-medium text-red-800">Pending</div>
+                    <div class="mt-1 text-2xl font-bold text-gray-900">
+                        {{ $grns->where('status', 'pending')->count() }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRNs Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full border">
+                    <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="border px-3 py-2 text-left">GRN No</th>
-                                <th class="border px-3 py-2 text-left">PO No</th>
-                                <th class="border px-3 py-2 text-left">GRN Date</th>
-                                <th class="border px-3 py-2 text-left">Status</th>
-                                <th class="border px-3 py-2 text-left">Actions</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    GRN Number
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    PO Number
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    GRN Date
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="bg-white divide-y divide-gray-100">
                             @forelse($grns as $grn)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="border px-3 py-2 font-medium">
-                                        <a class="text-indigo-700 hover:underline" href="{{ route('grn.show', $grn) }}">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <a href="{{ route('grn.show', $grn) }}"
+                                           class="font-medium text-indigo-600 hover:text-indigo-900 hover:underline">
                                             {{ $grn->grn_no }}
                                         </a>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Created {{ $grn->created_at->diffForHumans() }}
+                                        </div>
                                     </td>
-                                    <td class="border px-3 py-2">
-                                        {{ $grn->purchaseOrder?->po_no ?? '—' }}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium text-gray-900">{{ $grn->purchaseOrder?->po_no ?? '—' }}</div>
                                     </td>
-                                    <td class="border px-3 py-2">
-                                        {{ \Carbon\Carbon::parse($grn->grn_date)->format('Y-m-d') }}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-gray-900">
+                                            {{ \Carbon\Carbon::parse($grn->grn_date)->format('M d, Y') }}
+                                        </div>
                                     </td>
-                                    <td class="border px-3 py-2">
-                                        <span class="px-2 py-1 rounded text-xs
-                                            @if($grn->status==='draft') bg-gray-200 text-gray-800
-                                            @elseif($grn->status==='pending') bg-yellow-100 text-yellow-800
-                                            @elseif($grn->status==='approved') bg-green-100 text-green-800
-                                            @else bg-red-100 text-red-800
-                                            @endif
-                                        ">
-                                            {{ strtoupper($grn->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="border px-3 py-2 space-x-2">
-                                        <a href="{{ route('grn.show', $grn) }}" class="text-indigo-700 hover:underline">View</a>
-                                        @if($grn->status !== 'approved')
-                                            <a href="{{ route('grn.edit', $grn) }}" class="text-blue-700 hover:underline">Edit</a>
-
-                                            <form action="{{ route('grn.destroy', $grn) }}" method="POST" class="inline"
-                                                  onsubmit="return confirm('Delete this GRN?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-700 hover:underline">Delete</button>
-                                            </form>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($grn->status === 'draft')
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                DRAFT
+                                            </span>
+                                        @elseif($grn->status === 'pending')
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                PENDING
+                                            </span>
+                                        @elseif($grn->status === 'approved')
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                APPROVED
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                {{ strtoupper($grn->status) }}
+                                            </span>
                                         @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center space-x-3">
+                                            <a href="{{ route('grn.show', $grn) }}"
+                                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 focus:ring-2 focus:ring-offset-1 focus:ring-gray-500 transition-colors text-sm">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                                View
+                                            </a>
+
+                                            @if($grn->status !== 'approved')
+                                                <a href="{{ route('grn.edit', $grn) }}"
+                                                   class="inline-flex items-center px-3 py-1.5 border border-blue-300 rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors text-sm">
+                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                    Edit
+                                                </a>
+
+                                                <form action="{{ route('grn.destroy', $grn) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="inline-flex items-center px-3 py-1.5 border border-red-300 rounded-lg text-red-700 bg-red-50 hover:bg-red-100 hover:border-red-400 focus:ring-2 focus:ring-offset-1 focus:ring-red-500 transition-colors text-sm"
+                                                            onclick="return confirm('Are you sure you want to delete this GRN? This action cannot be undone.')">
+                                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="border px-3 py-6 text-center text-gray-500">
-                                        No GRNs found.
+                                    <td colspan="5" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center text-gray-400">
+                                            <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                            </svg>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">No GRNs found</h3>
+                                            <p class="text-gray-500 mb-4">Get started by creating your first GRN from a purchase order</p>
+                                            <a href="{{ route('po.index') }}"
+                                               class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                                </svg>
+                                                View Purchase Orders
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -86,9 +210,21 @@
                     </table>
                 </div>
 
-                <div class="mt-4">
-                    {{ $grns->links() }}
-                </div>
+                <!-- Pagination -->
+                @if($grns->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                Showing <span class="font-medium">{{ $grns->firstItem() }}</span>
+                                to <span class="font-medium">{{ $grns->lastItem() }}</span>
+                                of <span class="font-medium">{{ $grns->total() }}</span> results
+                            </div>
+                            <div class="flex space-x-2">
+                                {{ $grns->links() }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
