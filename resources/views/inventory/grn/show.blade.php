@@ -84,8 +84,8 @@
                     </div>
                 </div>
 
-                <!-- Info Cards Grid -->
                 <div class="p-6">
+                    <!-- Info Cards Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <!-- PO Card -->
                         <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100 shadow-sm">
@@ -158,8 +158,10 @@
                                 <h3 class="text-lg font-bold text-gray-900 mb-1">Received Items</h3>
                                 <p class="text-sm text-gray-600">{{ count($grn->items) }} items received</p>
                             </div>
+
+                            {{-- show GRN grand total from DB --}}
                             <div class="text-sm text-gray-500">
-                                Total Value: ₹{{ number_format($grn->items->sum(fn($item) => $item->qty_received * $item->rate), 2) }}
+                                Net Value: {{ number_format((float)$grn->grand_total, 2) }}
                             </div>
                         </div>
 
@@ -183,12 +185,16 @@
                                                 Unit Rate
                                             </th>
                                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                                Total Value
+                                                Line Total
                                             </th>
                                         </tr>
                                     </thead>
+
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         @foreach($grn->items as $row)
+                                            @php
+                                                $lineTotal = round(((float)$row->qty_received) * ((float)$row->rate), 2);
+                                            @endphp
                                             <tr class="hover:bg-gray-50 transition-colors">
                                                 <td class="px-6 py-4">
                                                     <div class="flex items-center">
@@ -203,21 +209,91 @@
                                                         </div>
                                                     </div>
                                                 </td>
+
                                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                                     <div class="text-sm font-semibold text-gray-900">{{ number_format($row->qty_received, 3) }}</div>
                                                 </td>
+
                                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div class="text-sm text-gray-900">₹{{ number_format($row->rate, 2) }}</div>
+                                                    <div class="text-sm text-gray-900">{{ number_format($row->rate, 2) }}</div>
                                                 </td>
+
                                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                                     <div class="text-sm font-bold text-gray-900">
-                                                        ₹{{ number_format($row->qty_received * $row->rate, 2) }}
+                                                        {{ number_format($lineTotal, 2) }}
                                                     </div>
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
+
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totals Summary (from GRN table) -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-1">Totals Summary</h3>
+                                <p class="text-sm text-gray-600">Values from GRN record</p>
+                            </div>
+
+                            {{-- <div class="text-sm text-gray-500">
+                                Net GRN Value: <span class="font-semibold text-gray-900">{{ number_format((float)$grn->grand_total, 2) }}</span>
+                            </div> --}}
+                        </div>
+
+                        <div class="rounded-2xl border border-gray-200 overflow-hidden shadow-sm bg-white">
+                            <div class="p-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="md:col-start-2 space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Total Items Amount</label>
+                                            <div class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right font-mono">
+                                                {{ number_format((float)$grn->sub_total, 2) }}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Delivery Amount</label>
+                                            <div class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right font-mono">
+                                                {{ number_format((float)$grn->delivery_amount, 2) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 bg-white">
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" disabled
+                                                       {{ $grn->sscl_enabled ? 'checked' : '' }}>
+                                                <span class="text-sm font-medium text-gray-700">SSCL (2.5%)</span>
+                                            </div>
+                                            <div class="text-right font-mono font-semibold text-gray-900">
+                                                {{ number_format((float)$grn->sscl_amount, 2) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 bg-white">
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" disabled
+                                                       {{ $grn->vat_enabled ? 'checked' : '' }}>
+                                                <span class="text-sm font-medium text-gray-700">VAT (18%)</span>
+                                            </div>
+                                            <div class="text-right font-mono font-semibold text-gray-900">
+                                                {{ number_format((float)$grn->vat_amount, 2) }}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-800">Net GRN Value</label>
+                                            <div class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-indigo-50 text-right font-bold text-lg font-mono">
+                                                {{ number_format((float)$grn->grand_total, 2) }}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -280,40 +356,24 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
 
     <style>
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
         .transition-colors {
             transition-property: background-color, border-color, color, fill, stroke;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 150ms;
         }
-
-        .bg-gradient-to-r {
-            background-size: 200% 100%;
-            background-position: 100% 0;
-        }
-
-        .bg-gradient-to-r:hover {
-            background-position: 0 0;
-        }
+        .bg-gradient-to-r { background-size: 200% 100%; background-position: 100% 0; }
+        .bg-gradient-to-r:hover { background-position: 0 0; }
     </style>
 </x-app-layout>
