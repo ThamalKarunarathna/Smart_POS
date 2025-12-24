@@ -33,14 +33,14 @@ class PurchaseOrderController extends Controller
 
 
     public function approvalIndex()
-{
-    $pos = PurchaseOrder::with('supplier')
-        ->where('status', 'pending')
-        ->latest()
-        ->paginate(20);
+    {
+        $pos = PurchaseOrder::with('supplier')
+            ->where('status', 'pending')
+            ->latest()
+            ->paginate(20);
 
-    return view('inventory.po.approval', compact('pos'));
-}
+        return view('inventory.po.approval', compact('pos'));
+    }
 
 
     public function create()
@@ -55,27 +55,67 @@ class PurchaseOrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'supplier_id' => 'required|exists:suppliers,id', // ✅ use FK
-            'po_date' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.item_id' => 'required|exists:items,id',
-            'items.*.qty' => 'required|numeric|min:0.001',
-            'items.*.rate' => 'required|numeric|min:0',
+            'supplier_id'       => 'required|exists:suppliers,id',
+            'po_date'           => 'required|date',
+
+            // extra charges/taxes
+            'delivery_amount'   => 'nullable|numeric|min:0',
+            'sscl_enabled'      => 'nullable|boolean',
+            'vat_enabled'       => 'nullable|boolean',
+
+            // items
+            'items'             => 'required|array|min:1',
+            'items.*.item_id'   => 'required|exists:items,id',
+            'items.*.qty'       => 'required|numeric|min:0.001',
+            'items.*.rate'      => 'required|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($validated) {
 
             $supplier = Supplier::findOrFail($validated['supplier_id']);
 
+            $delivery     = (float) ($validated['delivery_amount'] ?? 0);
+            $ssclEnabled  = (bool)  ($validated['sscl_enabled'] ?? false);
+            $vatEnabled   = (bool)  ($validated['vat_enabled'] ?? false);
+
+            // 1) Sub total = sum(qty * rate)
+            $subTotal = 0;
+            foreach ($validated['items'] as $row) {
+                $subTotal += ((float)$row['qty']) * ((float)$row['rate']);
+            }
+            $subTotal = round($subTotal, 2);
+
+            // 2) SSCL = (subTotal + delivery) * 2.5% (if enabled)
+            $base = $subTotal + $delivery;
+            $sscl = $ssclEnabled ? round($base * 0.025, 2) : 0;
+
+            // 3) VAT = (subTotal + delivery + sscl) * 18% (if enabled)
+            $vatBase = $base + $sscl;
+            $vat = $vatEnabled ? round($vatBase * 0.18, 2) : 0;
+
+            // 4) Grand total
+            $grandTotal = round($subTotal + $delivery + $sscl + $vat, 2);
+
+            // Create PO
             $po = PurchaseOrder::create([
-                'po_no' => $this->nextPoNo(),
-                'supplier_id' => $supplier->id,
-                'supplier_name' => $supplier->name, // optional fallback
-                'po_date' => $validated['po_date'],
-                'status' => 'draft',
-                'created_by' => auth()->id(),
+                'po_no'           => $this->nextPoNo(),
+                'supplier_id'     => $supplier->id,
+                'supplier_name'   => $supplier->name, // fallback display
+                'po_date'         => $validated['po_date'],
+                'status'          => 'draft',
+                'created_by'      => auth()->id(),
+
+                // totals
+                'sub_total'       => $subTotal,
+                'delivery_amount' => $delivery,
+                'sscl_enabled'    => $ssclEnabled,
+                'sscl_amount'     => $sscl,
+                'vat_enabled'     => $vatEnabled,
+                'vat_amount'      => $vat,
+                'grand_total'     => $grandTotal,
             ]);
 
+            // Create items
             foreach ($validated['items'] as $row) {
                 $po->items()->create([
                     'item_id' => $row['item_id'],
@@ -87,6 +127,7 @@ class PurchaseOrderController extends Controller
             return redirect()->route('po.show', $po)->with('success', 'PO created.');
         });
     }
+
 
     public function show(PurchaseOrder $po)
     {
@@ -114,6 +155,10 @@ class PurchaseOrderController extends Controller
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id', // ✅ use FK
             'po_date' => 'required|date',
+            'delivery_amount' => 'nullable|numeric|min:0',
+            'sscl_enabled' => 'nullable|boolean',
+            'vat_enabled' => 'nullable|boolean',
+
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty' => 'required|numeric|min:0.001',
@@ -124,10 +169,43 @@ class PurchaseOrderController extends Controller
 
             $supplier = Supplier::findOrFail($validated['supplier_id']);
 
+            $delivery = (float)($validated['delivery_amount'] ?? 0);
+            $ssclEnabled = (bool)($validated['sscl_enabled'] ?? false);
+            $vatEnabled = (bool)($validated['vat_enabled'] ?? false);
+
+            // 1) Sub total = sum(qty * rate)
+            $subTotal = 0;
+            foreach ($validated['items'] as $row) {
+                $subTotal += ((float)$row['qty']) * ((float)$row['rate']);
+            }
+            $subTotal = round($subTotal, 2);
+
+            // 2) SSCL = (subTotal + delivery) * 2.5% (if enabled)
+            $base = $subTotal + $delivery;
+            $sscl = $ssclEnabled ? round($base * 0.025, 2) : 0;
+
+            // 3) VAT = (subTotal + delivery + sscl) * 18% (if enabled)
+            $vatBase = $base + $sscl;
+            $vat = $vatEnabled ? round($vatBase * 0.18, 2) : 0;
+
+            // 4) Grand total
+            $grandTotal = round($subTotal + $delivery + $sscl + $vat, 2);
+
+
+
             $po->update([
                 'supplier_id' => $supplier->id,
                 'supplier_name' => $supplier->name, // optional fallback
                 'po_date' => $validated['po_date'],
+
+                // totals
+                'sub_total'       => $subTotal,
+                'delivery_amount' => $delivery,
+                'sscl_enabled'    => $ssclEnabled,
+                'sscl_amount'     => $sscl,
+                'vat_enabled'     => $vatEnabled,
+                'vat_amount'      => $vat,
+                'grand_total'     => $grandTotal,
             ]);
 
             $po->items()->delete();
@@ -140,7 +218,7 @@ class PurchaseOrderController extends Controller
                 ]);
             }
 
-            return redirect()->route('po.show', $po)->with('success', 'PO updated.');
+            return redirect()->route('po.index', $po)->with('success', 'PO updated.');
         });
     }
 

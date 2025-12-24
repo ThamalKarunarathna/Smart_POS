@@ -23,7 +23,6 @@
 
     <div class="py-6">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Approved Warning -->
             @if ($po->status === 'approved')
                 <div class="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl shadow-sm">
                     <div class="flex items-center">
@@ -41,7 +40,6 @@
                 </div>
             @endif
 
-            <!-- Error Messages -->
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 rounded-xl shadow-sm">
                     <div class="flex items-center">
@@ -62,44 +60,7 @@
                 </div>
             @endif
 
-            <!-- PO Info Card -->
-            <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-5">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-gray-900">PO #{{ $po->po_no }}</h3>
-                            <div class="flex flex-wrap gap-4 mt-1 text-sm text-gray-600">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $po->status === 'approved' ? 'bg-green-100 text-green-800' : ($po->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
-                                    {{ strtoupper($po->status) }}
-                                </span>
-                                <span class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    {{ \Carbon\Carbon::parse($po->po_date)->format('M d, Y') }}
-                                </span>
-                                @if($po->supplier_name)
-                                <span class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                    {{ $po->supplier_name }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Edit Form -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <!-- Form Header -->
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-indigo-50">
                     <div class="flex items-center">
                         <div class="p-2 rounded-lg bg-indigo-100">
@@ -114,63 +75,44 @@
                     </div>
                 </div>
 
-                <!-- Form Content -->
                 <form method="POST" action="{{ route('po.update', $po) }}" class="p-6">
                     @csrf
                     @method('PUT')
 
-                    <!-- Basic Information -->
+                    {{-- Basic --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700">
-                                Supplier Name
+                                Supplier <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                </div>
 
-                                 <select name="supplier_id"
-                                        class="pl-10 w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                    <option value="">-- Select Supplier --</option>
-                                    @foreach($suppliers as $supplier)
-                                        <option value="{{ $supplier->name }}" {{ $po->supplier_name == $supplier->id ? 'selected' : '' }}>
-                                            {{ $supplier->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-
-                                {{-- <input type="text"
-                                       name="supplier_name"
-                                       value="{{ old('supplier_name', $po->supplier_name) }}"
-                                       class="pl-10 w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                       placeholder="Enter supplier name"> --}}
-                            </div>
+                            {{-- FIXED: value must be supplier id --}}
+                            <select name="supplier_id"
+                                    class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    required>
+                                <option value="">-- Select Supplier --</option>
+                                @foreach($suppliers as $supplier)
+                                    <option value="{{ $supplier->id }}"
+                                        {{ (old('supplier_id', $po->supplier_id) == $supplier->id) ? 'selected' : '' }}>
+                                        {{ $supplier->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700">
-                                PO Date
-                                <span class="text-red-500">*</span>
+                                PO Date <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                </div>
-                                <input type="date"
-                                       name="po_date"
-                                       value="{{ old('po_date', \Carbon\Carbon::parse($po->po_date)->format('Y-m-d')) }}"
-                                       class="pl-10 w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                       required>
-                            </div>
+                            <input type="date"
+                                   name="po_date"
+                                   value="{{ old('po_date', \Carbon\Carbon::parse($po->po_date)->format('Y-m-d')) }}"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                   required>
                         </div>
                     </div>
 
-                    <!-- Items Section -->
+                    {{-- Items --}}
                     <div class="border border-gray-200 rounded-lg p-5 bg-gradient-to-br from-gray-50 to-indigo-50">
                         <div class="flex justify-between items-center mb-4">
                             <div>
@@ -187,76 +129,137 @@
                             </button>
                         </div>
 
-                        <!-- Items Table -->
                         <div class="overflow-x-auto">
                             <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden" id="itemsTable">
                                 <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                            Item
-                                        </th>
-                                        <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                            Quantity
-                                        </th>
-                                        <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                            Rate
-                                        </th>
-                                        <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                            Actions
-                                        </th>
-                                    </tr>
+                                <tr>
+                                    <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Item</th>
+                                    <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Qty</th>
+                                    <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Rate</th>
+                                    <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Line Total</th>
+                                    <th class="border-b px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                                </tr>
                                 </thead>
+
                                 <tbody>
-                                    @foreach($po->items as $i => $row)
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="border-b px-4 py-3">
-                                                <select name="items[{{ $i }}][item_id]"
-                                                        class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                        required>
-                                                    <option value="">-- Select Item --</option>
-                                                    @foreach($items as $it)
-                                                        <option value="{{ $it->id }}" @selected($it->id == $row->item_id)>
-                                                            {{ $it->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td class="border-b px-4 py-3">
-                                                <input type="number"
-                                                       step="0.001"
-                                                       min="0.001"
-                                                       name="items[{{ $i }}][qty]"
-                                                       value="{{ $row->qty }}"
-                                                       class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                       required
-                                                       placeholder="0.000">
-                                            </td>
-                                            <td class="border-b px-4 py-3">
-                                                <input type="number"
-                                                       step="0.01"
-                                                       min="0"
-                                                       name="items[{{ $i }}][rate]"
-                                                       value="{{ $row->rate }}"
-                                                       class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                                       required
-                                                       placeholder="0.00">
-                                            </td>
-                                            <td class="border-b px-4 py-3">
-                                                <button type="button"
-                                                        class="removeRow inline-flex items-center p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                                    </svg>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                @foreach($po->items as $i => $row)
+                                    @php $line = round(((float)$row->qty) * ((float)$row->rate), 2); @endphp
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="border-b px-4 py-3">
+                                            <select name="items[{{ $i }}][item_id]"
+                                                    class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                                    required>
+                                                <option value="">-- Select Item --</option>
+                                                @foreach($items as $it)
+                                                    <option value="{{ $it->id }}" @selected($it->id == $row->item_id)>
+                                                        {{ $it->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+
+                                        <td class="border-b px-4 py-3">
+                                            <input type="number" step="0.001" min="0.001"
+                                                   name="items[{{ $i }}][qty]"
+                                                   value="{{ old("items.$i.qty", $row->qty) }}"
+                                                   class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                                   required placeholder="0.000">
+                                        </td>
+
+                                        <td class="border-b px-4 py-3">
+                                            <input type="number" step="0.01" min="0"
+                                                   name="items[{{ $i }}][rate]"
+                                                   value="{{ old("items.$i.rate", $row->rate) }}"
+                                                   class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                                   required placeholder="0.00">
+                                        </td>
+
+                                        <td class="border-b px-4 py-3">
+                                            <input type="text"
+                                                   class="line_total w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
+                                                   value="{{ number_format($line, 2, '.', '') }}"
+                                                   readonly>
+                                        </td>
+
+                                        <td class="border-b px-4 py-3">
+                                            <button type="button"
+                                                    class="removeRow inline-flex items-center p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- Form Actions -->
+                    {{-- Totals Section (same as create) --}}
+                    <div class="mt-6 bg-white border border-gray-200 rounded-lg p-5">
+                        <div class="mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="md:col-start-2">
+                                        <label class="block text-sm font-medium text-gray-700">Total Items Amount</label>
+                                        <input id="sub_total" type="text"
+                                               class="w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
+                                               readonly value="0.00">
+                                    </div>
+                                    <div class="md:col-start-2">
+                                        <label class="block text-sm font-medium text-gray-700">Delivery Amount</label>
+                                        <input id="delivery_amount" name="delivery_amount" type="number" step="0.01" min="0"
+                                               class="w-full border-gray-300 rounded-lg px-3 py-2 text-right"
+                                               value="{{ old('delivery_amount', $po->delivery_amount ?? 0) }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="flex items-center gap-3">
+                                <input id="sscl_enabled" name="sscl_enabled" type="checkbox" value="1"
+                                       class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                       {{ old('sscl_enabled', $po->sscl_enabled ?? 0) ? 'checked' : '' }}>
+                                <label for="sscl_enabled" class="text-sm font-medium text-gray-700">
+                                    Apply SSCL (2.5%)
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">SSCL Amount</label>
+                                <input id="sscl_amount" type="text"
+                                       class="w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
+                                       readonly value="0.00">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <input id="vat_enabled" name="vat_enabled" type="checkbox" value="1"
+                                       class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                       {{ old('vat_enabled', $po->vat_enabled ?? 0) ? 'checked' : '' }}>
+                                <label for="vat_enabled" class="text-sm font-medium text-gray-700">
+                                    Apply VAT (18%)
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">VAT Amount</label>
+                                <input id="vat_amount" type="text"
+                                       class="w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
+                                       readonly value="0.00">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-800">Net PO Value</label>
+                                <input id="grand_total" type="text"
+                                       class="w-full border-gray-300 rounded-lg px-3 py-2 bg-indigo-50 font-bold text-lg text-right"
+                                       readonly value="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Actions --}}
                     <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                         <a href="{{ route('po.show', $po) }}"
                            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
@@ -285,6 +288,53 @@
             const addRowBtn = document.getElementById('addRow');
             const tableBody = document.querySelector('#itemsTable tbody');
 
+            const subTotalEl = document.getElementById('sub_total');
+            const deliveryEl = document.getElementById('delivery_amount');
+            const ssclEnabledEl = document.getElementById('sscl_enabled');
+            const vatEnabledEl = document.getElementById('vat_enabled');
+            const ssclAmountEl = document.getElementById('sscl_amount');
+            const vatAmountEl = document.getElementById('vat_amount');
+            const grandTotalEl = document.getElementById('grand_total');
+
+            function toNum(v) {
+                const n = parseFloat(v);
+                return isNaN(n) ? 0 : n;
+            }
+
+            function calcTotals() {
+                let subTotal = 0;
+
+                tableBody.querySelectorAll('tr').forEach(tr => {
+                    const qtyEl = tr.querySelector('input[name*="[qty]"]');
+                    const rateEl = tr.querySelector('input[name*="[rate]"]');
+                    const lineEl = tr.querySelector('.line_total');
+
+                    const qty = toNum(qtyEl?.value);
+                    const rate = toNum(rateEl?.value);
+                    const line = qty * rate;
+
+                    if (lineEl) lineEl.value = (Math.round(line * 100) / 100).toFixed(2);
+
+                    subTotal += line;
+                });
+
+                subTotal = Math.round(subTotal * 100) / 100;
+
+                const delivery = toNum(deliveryEl.value);
+                const base = subTotal + delivery;
+
+                const sscl = ssclEnabledEl.checked ? (Math.round(base * 0.025 * 100) / 100) : 0;
+                const vatBase = base + sscl;
+                const vat = vatEnabledEl.checked ? (Math.round(vatBase * 0.18 * 100) / 100) : 0;
+
+                const grand = Math.round((subTotal + delivery + sscl + vat) * 100) / 100;
+
+                subTotalEl.value = subTotal.toFixed(2);
+                ssclAmountEl.value = sscl.toFixed(2);
+                vatAmountEl.value = vat.toFixed(2);
+                grandTotalEl.value = grand.toFixed(2);
+            }
+
             addRowBtn.addEventListener('click', () => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-gray-50 transition-colors';
@@ -299,14 +349,24 @@
                     </td>
                     <td class="border-b px-4 py-3">
                         <input type="number" step="0.001" min="0.001"
-                               name="items[${rowIndex}][qty]" class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required placeholder="0.000">
+                               name="items[${rowIndex}][qty]"
+                               class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                               required placeholder="0.000">
                     </td>
                     <td class="border-b px-4 py-3">
                         <input type="number" step="0.01" min="0"
-                               name="items[${rowIndex}][rate]" class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required placeholder="0.00">
+                               name="items[${rowIndex}][rate]"
+                               class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                               required placeholder="0.00">
                     </td>
                     <td class="border-b px-4 py-3">
-                        <button type="button" class="removeRow inline-flex items-center p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
+                        <input type="text"
+                               class="line_total w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
+                               value="0.00" readonly>
+                    </td>
+                    <td class="border-b px-4 py-3">
+                        <button type="button"
+                                class="removeRow inline-flex items-center p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -315,6 +375,7 @@
                 `;
                 tableBody.appendChild(tr);
                 rowIndex++;
+                calcTotals();
             });
 
             document.addEventListener('click', (e) => {
@@ -322,8 +383,27 @@
                     const rows = tableBody.querySelectorAll('tr');
                     if (rows.length === 1) return;
                     e.target.closest('tr').remove();
+                    calcTotals();
                 }
             });
+
+            document.addEventListener('input', (e) => {
+                if (!e.target) return;
+
+                if (
+                    e.target.name?.includes('[qty]') ||
+                    e.target.name?.includes('[rate]') ||
+                    e.target.id === 'delivery_amount'
+                ) {
+                    calcTotals();
+                }
+            });
+
+            ssclEnabledEl.addEventListener('change', calcTotals);
+            vatEnabledEl.addEventListener('change', calcTotals);
+
+            // initial calc
+            calcTotals();
         });
     </script>
 </x-app-layout>

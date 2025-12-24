@@ -8,7 +8,11 @@ class PurchaseOrder extends Model
 {
 
      protected $fillable = [
-        'po_no','supplier_id','supplier_name','po_date','grn_status','status','created_by','approved_by','approved_at'
+        'po_no','supplier_id','supplier_name','po_date','grn_status','status','created_by','approved_by','approved_at',
+
+        // totals
+    'sub_total','delivery_amount','sscl_enabled','sscl_amount',
+    'vat_enabled','vat_amount','grand_total'
     ];
 
     public function items()
