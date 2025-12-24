@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\GrnController;
+use App\Http\Controllers\SupplierController;
 
 
 
@@ -95,6 +96,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/inventory/grn/{grn}/submit', [GrnController::class, 'submit'])->name('grn.submit');
     Route::post('/inventory/grn/{grn}/approve', [GrnController::class, 'approve'])->name('grn.approve');
     Route::post('/inventory/grn/{grn}/reject', [GrnController::class, 'reject'])->name('grn.reject');
+
+    // Supplier Routes
+    Route::get('/suppliers', [SupplierController::class, 'index']);
+    Route::get('/suppliers/create', [SupplierController::class, 'create']);
+    Route::post('/suppliers', [SupplierController::class, 'store']);
+    Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit']);
+    Route::put('/suppliers/{id}', [SupplierController::class, 'update']);
+    Route::delete('/suppliers/{id}', [SupplierController::class, 'destroy']);
 });
 
 require __DIR__.'/auth.php';

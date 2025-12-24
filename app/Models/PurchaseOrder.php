@@ -8,13 +8,19 @@ class PurchaseOrder extends Model
 {
 
      protected $fillable = [
-        'po_no','supplier_name','po_date','status','created_by','approved_by','approved_at'
+        'po_no','supplier_id','supplier_name','po_date','status','created_by','approved_by','approved_at'
     ];
 
     public function items()
     {
         return $this->hasMany(PurchaseOrderItem::class);
     }
+
+    public function supplier()
+{
+    return $this->belongsTo(Supplier::class);
+}
+
 
     public function creator()
     {
