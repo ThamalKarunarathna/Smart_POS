@@ -14,6 +14,11 @@ class Order extends Model
         'sub_total',
         'grand_total',
         'created_by',
+        'credit_inv',
+        'vat_applicable',
+        'sscl_applicable',
+        'sscl_amount',
+        'vat_amount',
     ];
 
     public function items()

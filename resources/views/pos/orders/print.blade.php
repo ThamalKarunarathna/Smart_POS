@@ -240,7 +240,12 @@
     </div>
 
     <div class="invoice-wrapper">
-        <h2>INVOICE</h2>
+        @if($order->customer?->vat_applicable == 1)
+                    <h2>VAT INVOICE</h2>
+        @else
+                    <h2>INVOICE</h2>
+        @endif
+
 
         <div class="row">
             <div>
@@ -251,10 +256,16 @@
                         {{ strtoupper($order->status) }}
                     </span>
                 </div>
+                @if($order->credit_inv == 1)
+                    <div class="muted"><strong>Invoice Type:</strong> Credit Invoice</div>
+                @endif
             </div>
             <div>
                 <div><strong>Customer:</strong> {{ $order->customer?->name ?? 'WALK-IN' }}</div>
                 <div class="muted">Printed from SmartPOS</div>
+                @if($order->customer?->vat_applicable == 1)
+                    <div class="muted">VAT NO - {{ $order->customer?->vat_reg_no }}</div>
+                @endif
             </div>
         </div>
 
@@ -287,6 +298,14 @@
             <tr>
                 <td><strong>Discount</strong></td>
                 <td class="right">{{ number_format($order->discount, 2) }}</td>
+            </tr>
+            <tr>
+                <td><strong>SSCL Amount</strong></td>
+                <td class="right">{{ number_format($order->sscl_amount, 2) }}</td>
+            </tr>
+            <tr>
+                <td><strong>Vat Amount</strong></td>
+                <td class="right">{{ number_format($order->vat_amount, 2) }}</td>
             </tr>
             <tr>
                 <td><strong>Grand Total</strong></td>

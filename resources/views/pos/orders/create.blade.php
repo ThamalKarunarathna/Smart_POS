@@ -121,10 +121,10 @@
 
                                 <!-- Delivery Amount -->
                                 <div class="grid grid-cols-2 gap-3 items-center">
-                                    <label class="text-sm font-medium text-gray-700 text-right">Delivery Amount</label>
-                                    <input id="delivery_amount" name="delivery_amount" type="number" step="0.01" min="0"
+                                    <label class="text-sm font-medium text-gray-700 text-right">Discount Amount</label>
+                                    <input id="discount" name="discount" type="number" step="0.01" min="0"
                                            class="w-full border-gray-300 rounded-lg px-3 py-2 text-right"
-                                           value="{{ old('delivery_amount', 0) }}"
+                                           value="{{ old('discount', 0) }}"
                                            onchange="calculateTotals()">
                                 </div>
 
@@ -141,7 +141,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">SSCL Amount</label>
-                                        <input id="sscl_amount" type="text"
+                                        <input id="sscl_amount" type="text" name="sscl_amount"
                                                class="w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
                                                readonly value="0.00">
                                     </div>
@@ -160,7 +160,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">VAT Amount</label>
-                                        <input id="vat_amount" type="text"
+                                        <input id="vat_amount" type="text" name="vat_amount"
                                                class="w-full border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-right"
                                                readonly value="0.00">
                                     </div>
@@ -349,7 +349,7 @@
         subtotal = Math.round(subtotal * 100) / 100;
 
         const subTotalEl = document.getElementById('sub_total');
-        const deliveryEl = document.getElementById('delivery_amount');
+        const deliveryEl = document.getElementById('discount');
         const ssclEnabledEl = document.getElementById('sscl_enabled');
         const vatEnabledEl = document.getElementById('vat_enabled');
         const ssclAmountEl = document.getElementById('sscl_amount');
@@ -359,7 +359,7 @@
         if (subTotalEl) subTotalEl.value = subtotal.toFixed(2);
 
         const delivery = deliveryEl ? toNum(deliveryEl.value) : 0;
-        const base = subtotal + delivery;
+        const base = subtotal - delivery;
 
         // SSCL 2.5% of (subtotal + delivery)
         const sscl = (ssclEnabledEl && ssclEnabledEl.checked) ? (Math.round(base * 0.025 * 100) / 100) : 0;
@@ -370,7 +370,7 @@
         const vat = (vatEnabledEl && vatEnabledEl.checked) ? (Math.round(vatBase * 0.18 * 100) / 100) : 0;
         if (vatAmountEl) vatAmountEl.value = vat.toFixed(2);
 
-        const grand = Math.round((subtotal + delivery + sscl + vat) * 100) / 100;
+        const grand = Math.round((subtotal - delivery + sscl + vat) * 100) / 100;
         if (grandTotalEl) grandTotalEl.value = grand.toFixed(2);
     }
 

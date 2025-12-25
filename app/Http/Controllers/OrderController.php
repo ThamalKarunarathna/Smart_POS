@@ -25,26 +25,27 @@ class OrderController extends Controller
     public function create()
     {
         $customers = Customer::where('is_active', 1)->orderBy('name')->get();
-        $items = Item::query()
-    ->where('status', 1)
-    ->orderBy('name')
-    ->select('items.*')
-    ->addSelect([
-        // latest active selling price
-        'latest_price' => ItemPrice::query()
-            ->select('selling_price')
-            ->whereColumn('item_prices.item_id', 'items.id')
-            ->where('item_prices.is_active', 1)
-            ->orderByDesc('item_prices.effective_from')
-            ->limit(1),
 
-        // available stock = SUM(qty_in) - SUM(qty_out)
-        'available_stock' => DB::table('stock_ledgers')
-            ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0)')
-            ->whereColumn('stock_ledgers.item_id', 'items.id')
-            ->limit(1),
-    ])
-    ->get();
+        $items = Item::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->select('items.*')
+            ->addSelect([
+                // latest active selling price
+                'latest_price' => ItemPrice::query()
+                    ->select('selling_price')
+                    ->whereColumn('item_prices.item_id', 'items.id')
+                    ->where('item_prices.is_active', 1)
+                    ->orderByDesc('item_prices.effective_from')
+                    ->limit(1),
+
+                // available stock = SUM(qty_in) - SUM(qty_out)
+                'available_stock' => DB::table('stock_ledgers')
+                    ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0)')
+                    ->whereColumn('stock_ledgers.item_id', 'items.id')
+                    ->limit(1),
+            ])
+            ->get();
 
         return view('pos.orders.create', compact('customers', 'items'));
     }
@@ -54,6 +55,11 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
             'discount'    => 'nullable|numeric|min:0',
+            'credit_enabled' => 'nullable|boolean',
+            'vat_enabled'    => 'nullable|boolean',
+            'sscl_enabled'   => 'nullable|boolean',
+            'vat_amount'     => 'nullable|numeric|min:0',
+            'sscl_amount'    => 'nullable|numeric|min:0',
             'items'       => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty'     => 'required|numeric|min:0.001',
@@ -69,6 +75,12 @@ class OrderController extends Controller
                 'sub_total'   => 0,
                 'grand_total' => 0,
                 'created_by'  => auth()->id(),
+
+                'credit_inv'      => !empty($validated['credit_enabled']),
+                'vat_applicable'  => !empty($validated['vat_enabled']),
+                'sscl_applicable' => !empty($validated['sscl_enabled']),
+                'vat_amount'      => $validated['vat_amount'] ?? 0,
+                'sscl_amount'     => $validated['sscl_amount'] ?? 0,
             ]);
 
             foreach ($validated['items'] as $row) {
@@ -112,26 +124,26 @@ class OrderController extends Controller
         }
 
         $customers = Customer::where('is_active', 1)->orderBy('name')->get();
-       $items = Item::query()
-    ->where('status', 1)
-    ->orderBy('name')
-    ->select('items.*')
-    ->addSelect([
-        // latest active selling price
-        'latest_price' => ItemPrice::query()
-            ->select('selling_price')
-            ->whereColumn('item_prices.item_id', 'items.id')
-            ->where('item_prices.is_active', 1)
-            ->orderByDesc('item_prices.effective_from')
-            ->limit(1),
+        $items = Item::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->select('items.*')
+            ->addSelect([
+                // latest active selling price
+                'latest_price' => ItemPrice::query()
+                    ->select('selling_price')
+                    ->whereColumn('item_prices.item_id', 'items.id')
+                    ->where('item_prices.is_active', 1)
+                    ->orderByDesc('item_prices.effective_from')
+                    ->limit(1),
 
-        // available stock = SUM(qty_in) - SUM(qty_out)
-        'available_stock' => DB::table('stock_ledgers')
-            ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0)')
-            ->whereColumn('stock_ledgers.item_id', 'items.id')
-            ->limit(1),
-    ])
-    ->get();
+                // available stock = SUM(qty_in) - SUM(qty_out)
+                'available_stock' => DB::table('stock_ledgers')
+                    ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0)')
+                    ->whereColumn('stock_ledgers.item_id', 'items.id')
+                    ->limit(1),
+            ])
+            ->get();
 
         return view('pos.orders.edit', compact('order', 'customers', 'items'));
     }
@@ -148,6 +160,11 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
             'discount'    => 'nullable|numeric|min:0',
+            'credit_enabled' => 'nullable|boolean',
+            'vat_enabled'    => 'nullable|boolean',
+            'sscl_enabled'   => 'nullable|boolean',
+            'vat_amount'     => 'nullable|numeric|min:0',
+            'sscl_amount'    => 'nullable|numeric|min:0',
             'items'       => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty'     => 'required|numeric|min:0.001',
@@ -158,6 +175,12 @@ class OrderController extends Controller
             $order->update([
                 'customer_id' => $validated['customer_id'] ?? null,
                 'discount'    => $validated['discount'] ?? 0,
+
+                'credit_inv'      => !empty($validated['credit_enabled']),
+                'vat_applicable'  => !empty($validated['vat_enabled']),
+                'sscl_applicable' => !empty($validated['sscl_enabled']),
+                'vat_amount'      => $validated['vat_amount'] ?? 0,
+                'sscl_amount'     => $validated['sscl_amount'] ?? 0,
             ]);
 
             // remove old items and re-add (simple and safe)
