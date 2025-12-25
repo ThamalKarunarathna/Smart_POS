@@ -58,13 +58,19 @@
                                 <label class="block text-sm font-medium text-gray-700">
                                     Customer (Optional)
                                 </label>
-                                <select name="customer_id"
-                                        class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                                    <option value="">WALK-IN CUSTOMER</option>
-                                    @foreach($customers as $c)
-                                        <option value="{{ $c->id }}">{{ $c->customer_code }} - {{ $c->name }}</option>
-                                    @endforeach
-                                </select>
+                               <select name="customer_id"
+        id="customer_select"
+        class="w-full border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+    <option value="">WALK-IN CUSTOMER</option>
+    @foreach($customers as $c)
+        <option value="{{ $c->id }}"
+                data-vat="{{ $c->vat_applicable }}"
+                data-sscl="{{ $c->sscl_applicable }}">
+            {{ $c->customer_code }} - {{ $c->name }}
+        </option>
+    @endforeach
+</select>
+
                             </div>
 
                             <!-- Credit Checkbox -->
@@ -211,6 +217,29 @@
         return isNaN(n) ? 0 : n;
     }
 
+    function handleCustomerTaxFlags() {
+    const select = document.getElementById('customer_select');
+    if (!select) return;
+
+    const opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value) {
+        // Walk-in customer → untick both
+        document.getElementById('vat_enabled').checked = false;
+        document.getElementById('sscl_enabled').checked = false;
+        calculateTotals();
+        return;
+    }
+
+    const vat  = opt.dataset.vat === '1';
+    const sscl = opt.dataset.sscl === '1';
+
+    document.getElementById('vat_enabled').checked  = vat;
+    document.getElementById('sscl_enabled').checked = sscl;
+
+    calculateTotals();
+}
+
+
     function addRow(itemId = '', qty = 1) {
         const idx = document.querySelectorAll('.pos-row').length;
 
@@ -319,21 +348,51 @@
     }
 
     function validateQtyAgainstStock(row) {
-        const itemId = row.querySelector('.item-select')?.value;
-        const qtyInput = row.querySelector('.qty-input');
+    const itemSelect = row.querySelector('.item-select');
+    const qtyInput   = row.querySelector('.qty-input');
 
-        if (!itemId || !qtyInput) return;
+    if (!itemSelect || !qtyInput) return;
 
-        const stock = itemStocks[itemId] ?? 0;
-        const qty = toNum(qtyInput.value);
+    const itemId = itemSelect.value;
+    if (!itemId) return;
 
-        // Simple UX: red border if qty exceeds stock
-        if (qty > stock && stock > 0) {
-            qtyInput.classList.add('border-red-400', 'focus:ring-red-500', 'focus:border-red-500');
-        } else {
-            qtyInput.classList.remove('border-red-400', 'focus:ring-red-500', 'focus:border-red-500');
-        }
+    const stock = itemStocks[itemId] ?? 0;
+    const qty   = toNum(qtyInput.value);
+
+    // find or create warning element
+    let warning = row.querySelector('.stock-warning');
+    if (!warning) {
+        warning = document.createElement('p');
+        warning.className = 'stock-warning mt-1 text-xs text-red-600';
+        qtyInput.parentElement.appendChild(warning);
     }
+
+    const itemName = itemSelect.options[itemSelect.selectedIndex]?.text || 'Item';
+
+    if (qty > stock && stock >= 0) {
+        // visual input state
+        qtyInput.classList.add(
+            'border-red-400',
+            'focus:ring-red-500',
+            'focus:border-red-500'
+        );
+
+        // professional message
+        warning.textContent = `Insufficient stock. Available: ${stock.toFixed(3)} units.`;
+        warning.classList.remove('hidden');
+    } else {
+        // clean state
+        qtyInput.classList.remove(
+            'border-red-400',
+            'focus:ring-red-500',
+            'focus:border-red-500'
+        );
+
+        warning.textContent = '';
+        warning.classList.add('hidden');
+    }
+}
+
 
     function removeRow(button) {
         button.closest('.pos-row').remove();
@@ -379,6 +438,12 @@
         const deliveryEl = document.getElementById('delivery_amount');
         const ssclEnabledEl = document.getElementById('sscl_enabled');
         const vatEnabledEl = document.getElementById('vat_enabled');
+
+        const customerSelect = document.getElementById('customer_select');
+if (customerSelect) {
+    customerSelect.addEventListener('change', handleCustomerTaxFlags);
+}
+
 
         if (deliveryEl) {
             deliveryEl.addEventListener('input', calculateTotals);

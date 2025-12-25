@@ -53,20 +53,23 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customer_id' => 'nullable|exists:customers,id',
-            'discount'    => 'nullable|numeric|min:0',
-            'credit_enabled' => 'nullable|boolean',
-            'vat_enabled'    => 'nullable|boolean',
-            'sscl_enabled'   => 'nullable|boolean',
-            'vat_amount'     => 'nullable|numeric|min:0',
-            'sscl_amount'    => 'nullable|numeric|min:0',
-            'items'       => 'required|array|min:1',
+            'customer_id'     => 'nullable|exists:customers,id',
+            'discount'        => 'nullable|numeric|min:0',
+
+            'credit_enabled'  => 'nullable|boolean',
+            'vat_enabled'     => 'nullable|boolean',
+            'sscl_enabled'    => 'nullable|boolean',
+            'vat_amount'      => 'nullable|numeric|min:0',
+            'sscl_amount'     => 'nullable|numeric|min:0',
+
+            'items'           => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty'     => 'required|numeric|min:0.001',
         ]);
 
         return DB::transaction(function () use ($validated) {
 
+            // 1) Create Order
             $order = Order::create([
                 'order_no'    => $this->nextOrderNo(),
                 'customer_id' => $validated['customer_id'] ?? null,
@@ -83,11 +86,35 @@ class OrderController extends Controller
                 'sscl_amount'     => $validated['sscl_amount'] ?? 0,
             ]);
 
+            // 2) (IMPORTANT) If same item selected multiple times, aggregate qty per item
+            $qtyByItem = [];
             foreach ($validated['items'] as $row) {
-                $itemId = (int)$row['item_id'];
-                $qty  = (float)$row['qty'];
+                $itemId = (int) $row['item_id'];
+                $qty    = (float) $row['qty'];
+                $qtyByItem[$itemId] = ($qtyByItem[$itemId] ?? 0) + $qty;
+            }
 
-                //get lates active selling price for the item
+            // 3) OPTIONAL: stock check BEFORE inserting (prevents negative stock)
+            // available stock = sum(qty_in) - sum(qty_out)
+            foreach ($qtyByItem as $itemId => $sellQty) {
+                $available = (float) DB::table('stock_ledgers')
+                    ->where('item_id', $itemId)
+                    ->selectRaw('COALESCE(SUM(qty_in),0) - COALESCE(SUM(qty_out),0) AS available')
+                    ->value('available');
+
+                if ($sellQty > $available) {
+                    abort(422, "Not enough stock for item ID {$itemId}. Available: {$available}, Selling: {$sellQty}");
+                }
+            }
+
+            // 4) Save Order Items + issue stock (qty_out)
+            // We use the ORIGINAL rows to preserve lines, but stock will be based on actual qty per line.
+            foreach ($validated['items'] as $row) {
+
+                $itemId = (int) $row['item_id'];
+                $qty    = (float) $row['qty'];
+
+                // latest active selling price
                 $price = ItemPrice::where('item_id', $itemId)
                     ->where('is_active', 1)
                     ->orderByDesc('effective_from')
@@ -97,8 +124,9 @@ class OrderController extends Controller
                     abort(422, "No active selling price found for item ID {$itemId}. Please add item price first.");
                 }
 
-                $lineTotal = round($qty * (float)$price, 2);
+                $lineTotal = round($qty * (float) $price, 2);
 
+                // Insert order item
                 OrderItem::create([
                     'order_id'   => $order->id,
                     'item_id'    => $itemId,
@@ -106,13 +134,27 @@ class OrderController extends Controller
                     'unit_price' => $price,
                     'line_total' => $lineTotal,
                 ]);
+
+                // ✅ Stock issue row in ledger (SALE / ref_id = order id)
+                DB::table('stock_ledgers')->insert([
+                    'item_id'    => $itemId,
+                    'ref_type'   => 'SALE',
+                    'ref_id'     => $order->id,
+                    'qty_in'     => 0,
+                    'qty_out'    => $qty,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
 
+            // 5) Recalculate totals (sub_total & grand_total)
             $this->recalculateTotals($order->id);
 
-            return redirect("/pos/orders/{$order->id}/print")->with('success', 'Order created successfully.');
+            return redirect("/pos/orders/{$order->id}/print")
+                ->with('success', 'Order created successfully.');
         });
     }
+
 
 
     public function edit($id)
@@ -160,11 +202,13 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'nullable|exists:customers,id',
             'discount'    => 'nullable|numeric|min:0',
+
             'credit_enabled' => 'nullable|boolean',
             'vat_enabled'    => 'nullable|boolean',
             'sscl_enabled'   => 'nullable|boolean',
             'vat_amount'     => 'nullable|numeric|min:0',
             'sscl_amount'    => 'nullable|numeric|min:0',
+
             'items'       => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty'     => 'required|numeric|min:0.001',
@@ -172,6 +216,21 @@ class OrderController extends Controller
 
         return DB::transaction(function () use ($order, $validated) {
 
+            // 1) OLD quantities from existing order items
+            $oldMap = $order->items
+                ->groupBy('item_id')
+                ->map(fn($rows) => (float) $rows->sum('qty'))
+                ->toArray();
+
+            // 2) NEW quantities from request
+            $newMap = [];
+            foreach ($validated['items'] as $row) {
+                $itemId = (int) $row['item_id'];
+                $qty    = (float) $row['qty'];
+                $newMap[$itemId] = ($newMap[$itemId] ?? 0) + $qty;
+            }
+
+            // 3) Update order header
             $order->update([
                 'customer_id' => $validated['customer_id'] ?? null,
                 'discount'    => $validated['discount'] ?? 0,
@@ -183,12 +242,12 @@ class OrderController extends Controller
                 'sscl_amount'     => $validated['sscl_amount'] ?? 0,
             ]);
 
-            // remove old items and re-add (simple and safe)
+            // 4) Rebuild order items
             OrderItem::where('order_id', $order->id)->delete();
 
             foreach ($validated['items'] as $row) {
-                $itemId = (int)$row['item_id'];
-                $qty = (float)$row['qty'];
+                $itemId = (int) $row['item_id'];
+                $qty    = (float) $row['qty'];
 
                 $price = ItemPrice::where('item_id', $itemId)
                     ->where('is_active', 1)
@@ -199,16 +258,48 @@ class OrderController extends Controller
                     abort(422, "No active selling price found for item ID {$itemId}. Please add item price first.");
                 }
 
-
-                $lineTotal = round($qty * (float)$price, 2);
+                $lineTotal = round($qty * (float) $price, 2);
 
                 OrderItem::create([
-                    'order_id'    => $order->id,
-                    'item_id'     => $itemId,
-                    'qty'         => $qty,
-                    'unit_price'  => $price,
-                    'line_total'  => $lineTotal,
+                    'order_id'   => $order->id,
+                    'item_id'    => $itemId,
+                    'qty'        => $qty,
+                    'unit_price' => $price,
+                    'line_total' => $lineTotal,
                 ]);
+            }
+
+            // 5) Stock ledger DELTA entries (ref_type=SALE, ref_id=order.id)
+            $allItemIds = array_unique(array_merge(array_keys($oldMap), array_keys($newMap)));
+
+            foreach ($allItemIds as $itemId) {
+                $oldQty = (float) ($oldMap[$itemId] ?? 0);
+                $newQty = (float) ($newMap[$itemId] ?? 0);
+                $diff   = $newQty - $oldQty;
+
+                if (abs($diff) < 0.000001) continue;
+
+                if ($diff > 0) {
+                    DB::table('stock_ledgers')->insert([
+                        'item_id'    => $itemId,
+                        'ref_type'   => 'SALE',
+                        'ref_id'     => $order->id,
+                        'qty_in'     => 0,
+                        'qty_out'    => $diff,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    DB::table('stock_ledgers')->insert([
+                        'item_id'    => $itemId,
+                        'ref_type'   => 'SALE',
+                        'ref_id'     => $order->id,
+                        'qty_in'     => abs($diff),
+                        'qty_out'    => 0,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
 
             $this->recalculateTotals($order->id);
