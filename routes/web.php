@@ -122,6 +122,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/finance/chart_of_accounts/{id}/edit', [App\Http\Controllers\ChartOfAccountController::class, 'edit']);
     Route::put('/finance/chart_of_accounts/{id}', [App\Http\Controllers\ChartOfAccountController::class, 'update']);
 
+    // Bill Entries Routes
+    Route::get('/finance/bill_entries', [App\Http\Controllers\BillEntryController::class, 'index']);
+    Route::get('/finance/bill_entries/create', [App\Http\Controllers\BillEntryController::class, 'create']);
+    Route::post('/finance/bill_entries', [App\Http\Controllers\BillEntryController::class, 'store']);
+    Route::get('/finance/bill_entries/{id}/edit', [App\Http\Controllers\BillEntryController::class, 'edit']);
+    Route::put('/finance/bill_entries/{id}', [App\Http\Controllers\BillEntryController::class, 'update']);
+    Route::get('/finance/bill_entries/{id}', [App\Http\Controllers\BillEntryController::class, 'show']);
+    Route::delete('/finance/bill_entries/{id}', [App\Http\Controllers\BillEntryController::class, 'destroy']);
+
+
 
 
 });
