@@ -103,7 +103,7 @@
                     </svg>
                     <span class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
                           :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
-                        POS
+                        Invoicing
                     </span>
                 </a>
 
@@ -223,7 +223,7 @@
 
                     <div x-show="financeOpen" x-collapse
                          class="mt-1 space-y-1 overflow-hidden">
-                        <a href="{{ url('/inventory/po') }}"
+                        <a href="{{ url('/finance/chart_of_accounts') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"

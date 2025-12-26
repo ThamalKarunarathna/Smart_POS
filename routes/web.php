@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\GrnController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ChartOfAccountController;
 
 
 
@@ -113,6 +114,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/suppliers/{id}/edit', [SupplierController::class, 'edit']);
     Route::put('/suppliers/{id}', [SupplierController::class, 'update']);
     Route::delete('/suppliers/{id}', [SupplierController::class, 'destroy']);
+
+    // Chart of Accounts Routes
+    Route::get('/finance/chart_of_accounts', [App\Http\Controllers\ChartOfAccountController::class, 'index']);
+    Route::get('/finance/chart_of_accounts/create', [App\Http\Controllers\ChartOfAccountController::class, 'create']);
+    Route::post('/finance/chart_of_accounts', [App\Http\Controllers\ChartOfAccountController::class, 'store']);
+    Route::get('/finance/chart_of_accounts/{id}/edit', [App\Http\Controllers\ChartOfAccountController::class, 'edit']);
+    Route::put('/finance/chart_of_accounts/{id}', [App\Http\Controllers\ChartOfAccountController::class, 'update']);
 
 
 
