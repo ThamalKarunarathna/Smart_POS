@@ -11,7 +11,7 @@ class Grn extends Model
 
         // totals
     'sub_total','delivery_amount','sscl_enabled','sscl_amount',
-    'vat_enabled','vat_amount','grand_total'
+    'vat_enabled','vat_amount','grand_total','payable_amount','pay_status'
     ];
 
     public function items()

@@ -109,6 +109,8 @@ class GrnController extends Controller
             'vat_enabled'     => $vatEnabled ? 1 : 0,
             'vat_amount'      => $vat,
             'grand_total'     => $grandTotal,
+            'payable_amount'   => $grandTotal,
+            'pay_status'      => 'Pending',
         ]);
 
         foreach ($validated['items'] as $row) {

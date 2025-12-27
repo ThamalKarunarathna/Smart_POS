@@ -113,6 +113,8 @@ class PurchaseOrderController extends Controller
                 'vat_enabled'     => $vatEnabled,
                 'vat_amount'      => $vat,
                 'grand_total'     => $grandTotal,
+                'payable_amount'   => $grandTotal,
+                'pay_status'      => 'Pending',
             ]);
 
             // Create items
@@ -206,6 +208,8 @@ class PurchaseOrderController extends Controller
                 'vat_enabled'     => $vatEnabled,
                 'vat_amount'      => $vat,
                 'grand_total'     => $grandTotal,
+                'payable_amount'   => $grandTotal,
+                'pay_status'      => 'Pending',
             ]);
 
             $po->items()->delete();
