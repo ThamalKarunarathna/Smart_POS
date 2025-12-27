@@ -48,7 +48,7 @@
     </script>
 </head>
 
-<body class="font-sans antialiased bg-gray-50" x-data="{ inventoryOpen: false, financeOpen: false, reportopen: false }">
+<body class="font-sans antialiased bg-gray-50" x-data="{ inventoryOpen: false, financeOpen: false, reportopen: false, billingOpen: false }">
 <div class="min-h-screen flex" x-data x-bind:class="$store.sidebar.collapsed ? 'lg:pl-30' : 'lg:pl-64'">
 
     {{-- Sidebar --}}
@@ -62,7 +62,7 @@
                 <x-application-logo class="block h-8 w-auto fill-current text-gray-800 flex-shrink-0" />
                 <span class="whitespace-nowrap transition-all duration-300 overflow-hidden"
                       :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
-                    SmartPOS
+                    SmartP ERP
                 </span>
             </a>
         </div>
@@ -95,7 +95,7 @@
             {{-- Admin-only menu --}}
             @if(auth()->check() && auth()->user()->role === 'admin')
                 {{-- POS --}}
-                <a href="{{ url('/pos/orders') }}"
+                {{-- <a href="{{ url('/pos/orders') }}"
                    class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                    :class="request()->is('pos/orders*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,56 @@
                           :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
                         Invoicing
                     </span>
-                </a>
+                </a> --}}
+
+                 <div>
+                    <button type="button"
+                            @click="billingOpen = !billingOpen"
+                            class="w-full flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                            :class="request()->is('po*') || request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                        <span class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                              :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                            Billing
+                        </span>
+                        <svg class="w-4 h-4 ml-auto flex-shrink-0 transform transition"
+                             :class="billingOpen ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div x-show="billingOpen" x-collapse
+                         class="mt-1 space-y-1 overflow-hidden">
+                        <a href="{{ url('/pos/orders') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Invoicing
+                            </span>
+                        </a>
+                        <a href="{{ url('/pos/orders') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Delivery Note
+                            </span>
+                        </a>
+                        <a href="{{ url('/pos/orders') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Recipt
+                            </span>
+                        </a>
+
+                    </div>
+                </div>
 
                 {{-- Customer --}}
                 <a href="{{ url('/customers') }}"
@@ -255,6 +304,14 @@
                                 Payment Vouchers
                             </span>
                         </a>
+                         <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                PV Approval
+                            </span>
+                        </a>
                         <a href="{{ url('/inventory/grn') }}"
                            class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                            :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
@@ -269,6 +326,14 @@
                             <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
                                   :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
                                 Balance Sheet
+                            </span>
+                        </a>
+                        <a href="{{ url('/inventory/grn') }}"
+                           class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                           :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            <span class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                  :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                Trail Balance
                             </span>
                         </a>
                         <a href="{{ url('/inventory/grn') }}"
