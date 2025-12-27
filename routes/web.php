@@ -11,6 +11,8 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\GrnController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ChartOfAccountController;
+use App\Http\Controllers\JournalEntryController;
+use App\Http\Controllers\BillEntryController;
 
 
 
@@ -116,20 +118,29 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/suppliers/{id}', [SupplierController::class, 'destroy']);
 
     // Chart of Accounts Routes
-    Route::get('/finance/chart_of_accounts', [App\Http\Controllers\ChartOfAccountController::class, 'index']);
-    Route::get('/finance/chart_of_accounts/create', [App\Http\Controllers\ChartOfAccountController::class, 'create']);
-    Route::post('/finance/chart_of_accounts', [App\Http\Controllers\ChartOfAccountController::class, 'store']);
-    Route::get('/finance/chart_of_accounts/{id}/edit', [App\Http\Controllers\ChartOfAccountController::class, 'edit']);
-    Route::put('/finance/chart_of_accounts/{id}', [App\Http\Controllers\ChartOfAccountController::class, 'update']);
+    Route::get('/finance/chart_of_accounts', [ChartOfAccountController::class, 'index']);
+    Route::get('/finance/chart_of_accounts/create', [ChartOfAccountController::class, 'create']);
+    Route::post('/finance/chart_of_accounts', [ChartOfAccountController::class, 'store']);
+    Route::get('/finance/chart_of_accounts/{id}/edit', [ChartOfAccountController::class, 'edit']);
+    Route::put('/finance/chart_of_accounts/{id}', [ChartOfAccountController::class, 'update']);
 
     // Bill Entries Routes
-    Route::get('/finance/bill_entries', [App\Http\Controllers\BillEntryController::class, 'index']);
-    Route::get('/finance/bill_entries/create', [App\Http\Controllers\BillEntryController::class, 'create']);
-    Route::post('/finance/bill_entries', [App\Http\Controllers\BillEntryController::class, 'store']);
-    Route::get('/finance/bill_entries/{id}/edit', [App\Http\Controllers\BillEntryController::class, 'edit']);
-    Route::put('/finance/bill_entries/{id}', [App\Http\Controllers\BillEntryController::class, 'update']);
-    Route::get('/finance/bill_entries/{id}', [App\Http\Controllers\BillEntryController::class, 'show']);
-    Route::delete('/finance/bill_entries/{id}', [App\Http\Controllers\BillEntryController::class, 'destroy']);
+    Route::get('/finance/bill_entries', [BillEntryController::class, 'index']);
+    Route::get('/finance/bill_entries/create', [BillEntryController::class, 'create']);
+    Route::post('/finance/bill_entries', [BillEntryController::class, 'store']);
+    Route::get('/finance/bill_entries/{id}/edit', [BillEntryController::class, 'edit']);
+    Route::put('/finance/bill_entries/{id}', [BillEntryController::class, 'update']);
+    Route::get('/finance/bill_entries/{id}', [BillEntryController::class, 'show']);
+    Route::delete('/finance/bill_entries/{id}', [BillEntryController::class, 'destroy']);
+
+    // Journal Entries Routes
+    Route::get('/finance/journal_entries', [JournalEntryController::class, 'index']);
+    Route::get('/finance/journal_entries/create', [JournalEntryController::class, 'create']);
+    Route::post('/finance/journal_entries', [JournalEntryController::class, 'store']);
+    Route::get('/finance/journal_entries/{id}/edit', [JournalEntryController::class, 'edit']);
+    Route::put('/finance/journal_entries/{id}', [JournalEntryController::class, 'update']);
+    Route::get('/finance/journal_entries/{id}', [JournalEntryController::class, 'show']);
+    Route::delete('/finance/journal_entries/{id}', [JournalEntryController::class, 'destroy']);
 
 
 
