@@ -13,6 +13,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\BillEntryController;
+use App\Http\Controllers\PaymentVoucherController;
 
 
 
@@ -141,6 +142,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/finance/journal_entries/{id}', [JournalEntryController::class, 'update']);
     Route::get('/finance/journal_entries/{id}', [JournalEntryController::class, 'show']);
     Route::delete('/finance/journal_entries/{id}', [JournalEntryController::class, 'destroy']);
+
+    // Payment Vouchers Routes
+    Route::get('payment_vouchers/pending', [PaymentVoucherController::class, 'pending'])
+        ->name('payment_vouchers.pending');
+    Route::get('/finance/payment_vouchers', [PaymentVoucherController::class, 'index']);
+    Route::get('/finance/payment_vouchers/create', [PaymentVoucherController::class, 'create']);
+    Route::post('/finance/payment_vouchers', [PaymentVoucherController::class, 'store']);
+    Route::get('/finance/payment_vouchers/{id}/edit', [PaymentVoucherController::class, 'edit']);
+    Route::put('/finance/payment_vouchers/{id}', [PaymentVoucherController::class, 'update']);
+    Route::get('/finance/payment_vouchers/{id}', [PaymentVoucherController::class, 'show']);
+    Route::delete('/finance/payment_vouchers/{id}', [PaymentVoucherController::class, 'destroy']);
 
 
 

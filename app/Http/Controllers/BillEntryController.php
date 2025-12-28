@@ -61,6 +61,8 @@ class BillEntryController extends Controller
                 'created_by' => auth()->id(),
                 'creditor_id' => $validated['creditor_id'],
                 'status' => 'Pending',
+                'payable_amount' => $totalDr,
+                'pay_status' => 'Pending',
             ]);
 
             foreach ($validated['lines'] as $line) {
@@ -127,6 +129,8 @@ class BillEntryController extends Controller
                 'remark'        => $validated['remark'] ?? null,
                 'total_dr'      => $totalDr,
                 'total_cr'      => $totalDr,
+                'payable_amount'=> $totalDr,
+                'pay_status'    => 'Pending',
             ]);
 
             // ✅ Replace lines (simple + safe)

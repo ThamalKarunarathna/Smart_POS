@@ -10,7 +10,7 @@ class BillEntry extends Model
     protected $fillable = [
         'bill_entry_no','bill_date','ref_no','ref_date',
         'creditor_id','cr_account_id','remark',
-        'total_dr','total_cr','status','created_by'
+        'total_dr','total_cr','status','created_by','payable_amount','pay_status'
     ];
 
     public function lines()
