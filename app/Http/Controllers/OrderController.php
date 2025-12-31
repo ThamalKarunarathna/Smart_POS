@@ -7,6 +7,8 @@ use App\Models\Item;
 use App\Models\ItemPrice;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\DeliveryNote;
+use App\Models\DeliveryNoteItem;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -149,6 +151,9 @@ class OrderController extends Controller
 
             // 5) Recalculate totals (sub_total & grand_total)
             $this->recalculateTotals($order->id);
+
+            // 6) Automatically create delivery note
+            $this->createDeliveryNote($order);
 
             return redirect("/pos/orders/{$order->id}/print")
                 ->with('success', 'Order created successfully.');
@@ -354,5 +359,46 @@ class OrderController extends Controller
             'sub_total'   => round($subTotal, 2),
             'grand_total' => round($grand, 2),
         ]);
+    }
+
+    private function createDeliveryNote(Order $order): void
+    {
+        // Load order items with item relationship
+        $order->load('items.item');
+
+        $deliveryNote = DeliveryNote::create([
+            'delivery_note_no' => $this->nextDeliveryNoteNo(),
+            'delivery_note_date' => now()->toDateString(),
+            'order_id' => $order->id,
+            'customer_id' => $order->customer_id,
+            'delivery_address' => $order->customer ? ($order->customer->address ?? null) : null,
+            'notes' => null,
+            'created_by' => auth()->id(),
+        ]);
+
+        // Create delivery note items from order items
+        foreach ($order->items as $orderItem) {
+            DeliveryNoteItem::create([
+                'delivery_note_id' => $deliveryNote->id,
+                'item_id' => $orderItem->item_id,
+                'qty' => $orderItem->qty,
+                'unit' => null,
+                'description' => $orderItem->item->name ?? null,
+            ]);
+        }
+    }
+
+    private function nextDeliveryNoteNo(): string
+    {
+        $last = DeliveryNote::orderByDesc('id')->value('delivery_note_no');
+
+        if (!$last) {
+            return 'DN-000001';
+        }
+
+        $num = (int) str_replace('DN-', '', $last);
+        $num++;
+
+        return 'DN-' . str_pad((string)$num, 6, '0', STR_PAD_LEFT);
     }
 }

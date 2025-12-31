@@ -147,15 +147,6 @@
                             </a>
                             <a href="{{ url('/pos/orders') }}"
                                 class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                                :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
-                                <span
-                                    class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
-                                    :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
-                                    Delivery Note
-                                </span>
-                            </a>
-                            <a href="{{ url('/pos/orders') }}"
-                                class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                                 :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                                 <span
                                     class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
@@ -166,6 +157,21 @@
 
                         </div>
                     </div>
+
+                    {{-- Delivery Notes --}}
+                    <a href="{{ route('delivery_notes.index') }}"
+                        class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                        :class="request()->is('delivery-notes*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span
+                            class="ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                            :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                            Delivery Notes
+                        </span>
+                    </a>
 
                     {{-- Customer --}}
                     <a href="{{ url('/customers') }}"

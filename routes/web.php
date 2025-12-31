@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\GrnController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ChartOfAccountController;
@@ -65,6 +66,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::patch('/pos/orders/{id}/cancel', [OrderController::class, 'cancel']);
     Route::get('/pos/orders/{id}/print', [OrderController::class, 'print']);
+
+    // Delivery Notes Routes
+    Route::get('/delivery-notes', [DeliveryNoteController::class, 'index'])->name('delivery_notes.index');
+    Route::get('/delivery-notes/{id}', [DeliveryNoteController::class, 'show'])->name('delivery_notes.show');
+    Route::get('/delivery-notes/{id}/print', [DeliveryNoteController::class, 'print'])->name('delivery_notes.print');
 
     // PO Approval Route
     Route::get('/inventory/po/approval', [PurchaseOrderController::class, 'approvalIndex'])->name('po.approval');
