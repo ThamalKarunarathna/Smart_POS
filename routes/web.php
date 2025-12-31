@@ -72,6 +72,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // GRN Approval Route
     Route::get('/inventory/grn/approval', [GrnController::class, 'approvalIndex'])->name('grn.approval');
 
+    // Payment Voucher Approval Route
+    Route::get('/finance/payment_vouchers/approval', [PaymentVoucherController::class, 'approvalIndex'])->name('payment_vouchers.approval');
+
+
     // PO Routes
     Route::get('/inventory/po', [PurchaseOrderController::class, 'index'])->name('po.index');
     Route::get('/inventory/po/create', [PurchaseOrderController::class, 'create'])->name('po.create');
@@ -144,19 +148,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/finance/journal_entries/{id}', [JournalEntryController::class, 'destroy']);
 
     // Payment Vouchers Routes
-    Route::get('payment_vouchers/pending', [PaymentVoucherController::class, 'pending'])
-        ->name('payment_vouchers.pending');
+    Route::get('payment_vouchers/pending', [PaymentVoucherController::class, 'pending'])->name('payment_vouchers.pending');
     Route::get('/finance/payment_vouchers', [PaymentVoucherController::class, 'index']);
     Route::get('/finance/payment_vouchers/create', [PaymentVoucherController::class, 'create']);
     Route::post('/finance/payment_vouchers', [PaymentVoucherController::class, 'store']);
     Route::get('/finance/payment_vouchers/{id}/edit', [PaymentVoucherController::class, 'edit']);
     Route::put('/finance/payment_vouchers/{id}', [PaymentVoucherController::class, 'update']);
     Route::get('/finance/payment_vouchers/{id}', [PaymentVoucherController::class, 'show']);
+    Route::get('/finance/payment_vouchers/showapproval/{id}', [PaymentVoucherController::class, 'show_approval'])->name('payment_voucher.show_approval');
     Route::delete('/finance/payment_vouchers/{id}', [PaymentVoucherController::class, 'destroy']);
 
+    // Payment Voucher Approval Routes
 
 
-
+    // IMPORTANT: use model binding param {voucher} to match controller approve(PaymentVoucher $voucher)
+    Route::post('/finance/payment_vouchers/{voucher}/approve', [PaymentVoucherController::class, 'approve'])->name('payment_vouchers.approve');
+    Route::post('/finance/payment_vouchers/{voucher}/reject', [PaymentVoucherController::class, 'reject'])->name('payment_vouchers.reject');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

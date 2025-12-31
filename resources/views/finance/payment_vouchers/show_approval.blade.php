@@ -1,13 +1,13 @@
 {{-- resources/views/finance/payment_vouchers/show.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between no-print">
+        <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Payment Voucher</h1>
                 <p class="text-sm text-gray-600 mt-1">{{ $voucher->voucher_no }}</p>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap justify-end">
                 <a href="{{ url('/finance/payment_vouchers') }}"
                    class="px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -16,14 +16,40 @@
                     Back to List
                 </a>
 
-                <button onclick="window.print()"
+                <a href="{{ url('/finance/payment_vouchers/'.$voucher->id.'/edit') }}"
                    class="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M17 17h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                    Print
-                </button>
+                    Edit
+                </a>
+
+                @if (strtolower($voucher->status ?? '') === 'pending')
+                    <form action="{{ route('payment_vouchers.reject', $voucher) }}" method="POST" onsubmit="return confirm('Reject this voucher?');">
+                        @csrf
+                        <button type="submit"
+                                class="px-4 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium hover:bg-red-100 transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Reject
+                        </button>
+                    </form>
+
+                    <form action="{{ route('payment_vouchers.approve', $voucher) }}" method="POST" onsubmit="return confirm('Approve this voucher?');">
+                        @csrf
+                        <button type="submit"
+                                class="px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Approve
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -40,38 +66,55 @@
         $isOther = ($voucher->voucher_type === 'OTHER');
     @endphp
 
-    <div class="py-6">
-        <div class="flex items-center gap-2 no-print mb-4">
-            <a href="{{ url('/finance/payment_vouchers') }}"
-               class="px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                Back to List
-            </a>
 
-            <button onclick="window.print()"
-               class="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17 17h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                Print
-            </button>
+{{-- <div>
+    <h1>Reject Reason</h1>
+</div> --}}
+
+    {{-- <div>
+        <div>
+
+            <form action="{{ route('payment_vouchers.reject', $voucher) }}" method="POST" onsubmit="return confirm('Reject this voucher?');">
+                @csrf
+                <button type="submit"
+                        class="px-4 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium hover:bg-red-100 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Reject
+                </button>
+            </form>
+
+            <form action="{{ route('payment_vouchers.approve', $voucher) }}" method="POST" onsubmit="return confirm('Approve this voucher?');">
+                @csrf
+                <button type="submit"
+                        class="px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Approve
+                </button>
+            </form>
+
         </div>
+    </div> --}}
+
+    <div class="py-6">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-white rounded-2xl shadow-lg p-8 print:shadow-none print:rounded-none">
+            <div class="bg-white rounded-2xl shadow-lg p-8">
 
                 {{-- Top Summary --}}
                 <div class="mb-8">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Payment Voucher</h2>
-                            <p class="text-sm text-gray-500 print:hidden">View voucher details and items</p>
+                            <h2 class="text-lg font-semibold text-gray-900">Voucher Information</h2>
+                            <p class="text-sm text-gray-500">View voucher details and items</p>
                         </div>
 
-                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border {{ $badge }} print:hidden">
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border {{ $badge }}">
                             {{ $status }}
                         </span>
                     </div>
@@ -215,116 +258,36 @@
                     </div>
                 </div>
 
+                @if (strtolower($voucher->status ?? '') === 'pending')
+                <div class="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <form action="{{ route('payment_vouchers.reject', $voucher) }}" method="POST" onsubmit="return confirm('Reject this voucher?');">
+                        @csrf
+                        <button type="submit"
+                                class="px-4 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium hover:bg-red-100 transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Reject
+                        </button>
+                    </form>
+
+                    <form action="{{ route('payment_vouchers.approve', $voucher) }}" method="POST" onsubmit="return confirm('Approve this voucher?');">
+                        @csrf
+                        <button type="submit"
+                                class="px-4 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Approve
+                        </button>
+                    </form>
+                </div>
+                @endif
+
+
             </div>
         </div>
     </div>
-
-    <style>
-        @media print {
-            /* Hide navigation and layout elements */
-            .no-print,
-            aside,
-            header,
-            nav,
-            .sidebar-transition,
-            [x-data] aside,
-            .min-h-screen > aside,
-            .flex > aside {
-                display: none !important;
-            }
-
-            /* Remove body padding/margin from layout */
-            body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            /* Remove layout container padding */
-            .min-h-screen,
-            .flex,
-            .flex-1 {
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            /* Remove left padding from main content area */
-            [x-bind\:class*="pl-"],
-            .lg\:pl-64,
-            .lg\:pl-30 {
-                padding-left: 0 !important;
-            }
-
-            /* Make content full width */
-            .max-w-6xl,
-            .max-w-7xl {
-                max-width: 100% !important;
-                margin: 0 auto !important;
-                padding: 0 1rem !important;
-            }
-
-            /* Remove any fixed positioning that might interfere */
-            .fixed {
-                position: static !important;
-            }
-
-            .print\:shadow-none {
-                box-shadow: none !important;
-            }
-
-            .print\:rounded-none {
-                border-radius: 0 !important;
-            }
-
-            @page {
-                margin: 1cm;
-                size: A4;
-            }
-
-            .bg-white {
-                background: white !important;
-            }
-
-            .bg-gray-50 {
-                background: #f9fafb !important;
-            }
-
-            .bg-indigo-50 {
-                background: #eef2ff !important;
-            }
-
-            .bg-blue-50 {
-                background: #eff6ff !important;
-            }
-
-            /* Ensure borders print */
-            .border,
-            .border-gray-200,
-            .border-indigo-100 {
-                border-color: #e5e7eb !important;
-            }
-
-            /* Remove hover effects for print */
-            .hover\:bg-gray-50:hover {
-                background: white !important;
-            }
-
-            /* Ensure text is black for better printing */
-            .text-gray-900,
-            .text-gray-700,
-            .text-gray-500 {
-                color: #111827 !important;
-            }
-
-            .text-indigo-700 {
-                color: #4338ca !important;
-            }
-
-            /* Hide print button and back button */
-            button[onclick*="print"],
-            .no-print {
-                display: none !important;
-            }
-        }
-    </style>
 </x-app-layout>

@@ -17,6 +17,73 @@ class PaymentVoucherController extends Controller
         return view('finance.payment_vouchers.index', compact('vouchers'));
     }
 
+    public function approvalIndex()
+    {
+        $vouchers = PaymentVoucher::with('items')   // items needed to detect supplier
+            ->where('status', 'Pending')
+            ->latest()
+            ->paginate(20);
+
+        // Build supplier name map (voucher_id => supplier_name)
+        $supplierNames = [];
+
+        foreach ($vouchers as $v) {
+            $supplierNames[$v->id] = $this->detectSupplierNameFromVoucher($v);
+        }
+
+        return view('finance.payment_vouchers.approval', compact('vouchers', 'supplierNames'));
+    }
+
+    public function approve(PaymentVoucher $voucher)
+    {
+        if ($voucher->status !== 'Pending') {
+            return back()->with('error', 'Only pending Payment Voucher can be approved.');
+        }
+
+        $voucher->load('items');
+
+        DB::transaction(function () use ($voucher) {
+            $voucher->update([
+                'status'      => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+
+            $poIds = $voucher->items->where('ref_type', 'PO')->pluck('ref_id')->filter()->unique()->values();
+            $grnIds = $voucher->items->where('ref_type', 'GRN')->pluck('ref_id')->filter()->unique()->values();
+            $billIds = $voucher->items->where('ref_type', 'BILL')->pluck('ref_id')->filter()->unique()->values();
+
+            if ($poIds->isNotEmpty()) {
+                DB::table('purchase_orders')->whereIn('id', $poIds)->update(['pay_status' => 'Piad']);
+            }
+
+            if ($grnIds->isNotEmpty()) {
+                DB::table('grns')->whereIn('id', $grnIds)->update(['pay_status' => 'Piad']);
+            }
+
+            if ($billIds->isNotEmpty()) {
+                DB::table('bill_entries')->whereIn('id', $billIds)->update(['pay_status' => 'Piad']);
+            }
+        });
+
+        return redirect()->route('payment_vouchers.approval')->with('success', 'Payment Voucher approved.');
+    }
+
+    public function reject(PaymentVoucher $voucher)
+    {
+        if ($voucher->status !== 'Pending') {
+            return back()->with('error', 'Only pending Payment Voucher can be rejected.');
+        }
+
+        $voucher->update([
+            'status'      => 'rejected',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        return redirect()->route('payment_vouchers.approval')->with('success', 'Payment Voucher rejected.');
+    }
+
     public function create()
     {
         $voucherNo = $this->nextVoucherNo();
@@ -36,9 +103,6 @@ class PaymentVoucherController extends Controller
         return 'PV-' . str_pad($num, 6, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * AJAX pending list
-     */
     public function pending(Request $request)
     {
         $type = $request->get('type');
@@ -53,75 +117,45 @@ class PaymentVoucherController extends Controller
 
         if ($type === 'PO') {
             $q = DB::table('purchase_orders')
-                ->select(
-                    'id',
-                    'po_no as no',
-                    'po_date as date',
-                    DB::raw("COALESCE(payable_amount, 0) as amount")
-                )
+                ->select('id','po_no as no','po_date as date', DB::raw("COALESCE(payable_amount, 0) as amount"))
                 ->where('supplier_id', $supplierId)
                 ->where('pay_status', 'Pending');
 
-            if (!empty($selectedIds)) {
-                $q->orWhereIn('id', $selectedIds);
-            }
+            if (!empty($selectedIds)) $q->orWhereIn('id', $selectedIds);
 
             $rows = $q->orderByDesc('id')->get()->map(fn($r) => [
-                'id' => $r->id,
-                'no' => $r->no,
-                'date' => $r->date,
-                'amount' => (float)$r->amount,
+                'id' => $r->id, 'no' => $r->no, 'date' => $r->date, 'amount' => (float)$r->amount,
             ]);
 
         } elseif ($type === 'GRN') {
 
             $q = DB::table('grns as g')
                 ->join('purchase_orders as po', 'po.id', '=', 'g.purchase_order_id')
-                ->select(
-                    'g.id',
-                    'g.grn_no as no',
-                    'g.grn_date as date',
-                    DB::raw("COALESCE(g.payable_amount, 0) as amount")
-                )
+                ->select('g.id','g.grn_no as no','g.grn_date as date', DB::raw("COALESCE(g.payable_amount, 0) as amount"))
                 ->where(function ($w) use ($supplierId, $selectedIds) {
                     $w->where(function ($x) use ($supplierId) {
                         $x->where('po.supplier_id', $supplierId)
                           ->where('g.pay_status', 'Pending');
                     });
 
-                    if (!empty($selectedIds)) {
-                        $w->orWhereIn('g.id', $selectedIds);
-                    }
+                    if (!empty($selectedIds)) $w->orWhereIn('g.id', $selectedIds);
                 });
 
             $rows = $q->orderByDesc('g.id')->get()->map(fn($r) => [
-                'id' => $r->id,
-                'no' => $r->no,
-                'date' => $r->date,
-                'amount' => (float)$r->amount,
+                'id' => $r->id, 'no' => $r->no, 'date' => $r->date, 'amount' => (float)$r->amount,
             ]);
 
         } elseif ($type === 'BILL') {
 
             $q = DB::table('bill_entries')
-                ->select(
-                    'id',
-                    'bill_entry_no as no',
-                    'bill_date as date',
-                    DB::raw("COALESCE(payable_amount, 0) as amount")
-                )
+                ->select('id','bill_entry_no as no','bill_date as date', DB::raw("COALESCE(payable_amount, 0) as amount"))
                 ->where('creditor_id', $supplierId)
                 ->where('pay_status', 'Pending');
 
-            if (!empty($selectedIds)) {
-                $q->orWhereIn('id', $selectedIds);
-            }
+            if (!empty($selectedIds)) $q->orWhereIn('id', $selectedIds);
 
             $rows = $q->orderByDesc('id')->get()->map(fn($r) => [
-                'id' => $r->id,
-                'no' => $r->no,
-                'date' => $r->date,
-                'amount' => (float)$r->amount,
+                'id' => $r->id, 'no' => $r->no, 'date' => $r->date, 'amount' => (float)$r->amount,
             ]);
         }
 
@@ -197,7 +231,6 @@ class PaymentVoucherController extends Controller
             ];
         })->values();
 
-        // ✅ Detect supplier id from existing items (for edit page default)
         $selectedSupplierId = null;
 
         if (in_array($voucher->voucher_type, ['PO','GRN','BILL'])) {
@@ -235,7 +268,6 @@ class PaymentVoucherController extends Controller
             'cr_account_id'=> 'required|exists:chart_of_accounts,id',
             'supplier_id'  => 'nullable|exists:suppliers,id',
 
-            // ✅ always require items (OTHER also uses items)
             'items'                 => 'required|array|min:1',
             'items.*.ref_type'      => 'required|in:PO,GRN,BILL,OTHER',
             'items.*.ref_id'        => 'nullable|integer',
@@ -277,6 +309,102 @@ class PaymentVoucherController extends Controller
 
             return redirect('/finance/payment_vouchers')->with('success', 'Payment Voucher updated successfully.');
         });
+    }
+
+    public function show($id)
+    {
+        $voucher = PaymentVoucher::with([
+            'items.drAccount',
+            'crAccount',
+        ])->findOrFail($id);
+
+        $supplierName = $this->detectSupplierNameFromVoucher($voucher);
+
+        $refLabels = [
+            'PO'   => [],
+            'GRN'  => [],
+            'BILL' => [],
+        ];
+
+        $poIds   = $voucher->items->where('ref_type','PO')->pluck('ref_id')->filter()->unique()->values();
+        $grnIds  = $voucher->items->where('ref_type','GRN')->pluck('ref_id')->filter()->unique()->values();
+        $billIds = $voucher->items->where('ref_type','BILL')->pluck('ref_id')->filter()->unique()->values();
+
+        if ($poIds->count()) {
+            $refLabels['PO'] = DB::table('purchase_orders')->whereIn('id', $poIds)->pluck('po_no', 'id')->toArray();
+        }
+        if ($grnIds->count()) {
+            $refLabels['GRN'] = DB::table('grns')->whereIn('id', $grnIds)->pluck('grn_no', 'id')->toArray();
+        }
+        if ($billIds->count()) {
+            $refLabels['BILL'] = DB::table('bill_entries')->whereIn('id', $billIds)->pluck('bill_entry_no', 'id')->toArray();
+        }
+
+        return view('finance.payment_vouchers.show', compact('voucher', 'supplierName', 'refLabels'));
+    }
+
+    public function show_approval($id)
+    {
+        $voucher = PaymentVoucher::with([
+            'items.drAccount',
+            'crAccount',
+        ])->findOrFail($id);
+
+        $supplierName = $this->detectSupplierNameFromVoucher($voucher);
+
+        $refLabels = [
+            'PO'   => [],
+            'GRN'  => [],
+            'BILL' => [],
+        ];
+
+        $poIds   = $voucher->items->where('ref_type','PO')->pluck('ref_id')->filter()->unique()->values();
+        $grnIds  = $voucher->items->where('ref_type','GRN')->pluck('ref_id')->filter()->unique()->values();
+        $billIds = $voucher->items->where('ref_type','BILL')->pluck('ref_id')->filter()->unique()->values();
+
+        if ($poIds->count()) {
+            $refLabels['PO'] = DB::table('purchase_orders')->whereIn('id', $poIds)->pluck('po_no', 'id')->toArray();
+        }
+        if ($grnIds->count()) {
+            $refLabels['GRN'] = DB::table('grns')->whereIn('id', $grnIds)->pluck('grn_no', 'id')->toArray();
+        }
+        if ($billIds->count()) {
+            $refLabels['BILL'] = DB::table('bill_entries')->whereIn('id', $billIds)->pluck('bill_entry_no', 'id')->toArray();
+        }
+
+        return view('finance.payment_vouchers.show_approval', compact('voucher', 'supplierName', 'refLabels'));
+    }
+
+    private function detectSupplierNameFromVoucher(PaymentVoucher $voucher): ?string
+    {
+        if (!in_array($voucher->voucher_type, ['PO','GRN','BILL'])) {
+            return null;
+        }
+
+        $firstRefId = optional($voucher->items->first())->ref_id;
+        if (!$firstRefId) return null;
+
+        if ($voucher->voucher_type === 'PO') {
+            return DB::table('suppliers as s')
+                ->join('purchase_orders as po', 'po.supplier_id', '=', 's.id')
+                ->where('po.id', $firstRefId)
+                ->value('s.name');
+
+        } elseif ($voucher->voucher_type === 'GRN') {
+            return DB::table('suppliers as s')
+                ->join('purchase_orders as po', 'po.supplier_id', '=', 's.id')
+                ->join('grns as g', 'g.purchase_order_id', '=', 'po.id')
+                ->where('g.id', $firstRefId)
+                ->value('s.name');
+
+        } elseif ($voucher->voucher_type === 'BILL') {
+            return DB::table('suppliers as s')
+                ->join('bill_entries as b', 'b.creditor_id', '=', 's.id')
+                ->where('b.id', $firstRefId)
+                ->value('s.name');
+        }
+
+        return null;
     }
 
     public function destroy($id)
