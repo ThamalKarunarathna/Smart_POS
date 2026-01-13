@@ -145,15 +145,26 @@
                                     Invoicing
                                 </span>
                             </a>
+                            <a href="{{ url('/pos/receipts') }}"
+                                class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
+                                :class="request()->is('receipts*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                                <span
+                                    class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
+                                    :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+                                    Receipt
+                                </span>
+                            </a>
+
                             <a href="{{ url('/pos/orders') }}"
                                 class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
                                 :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                                 <span
                                     class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
                                     :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
-                                    Recipt
+                                    Recipt Approval
                                 </span>
                             </a>
+
 
                         </div>
                     </div>
@@ -388,7 +399,7 @@
                     <div>
                         <button type="button" @click="reportopen = !reportopen"
                             class="w-full flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                            :class="request()->is('po*') || request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                            :class="request()->is('reports*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -409,27 +420,18 @@
 
 
                         <div x-show="reportopen" x-collapse class="mt-1 space-y-1 overflow-hidden">
-                            <a href="{{ url('/inventory/po') }}"
+                            <a href="{{ route('reports.sales') }}"
                                 class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                                :class="request()->is('po*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
-                                <span
-                                    class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
-                                    :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
-                                    Customer Detail
-                                </span>
-                            </a>
-                            <a href="{{ url('/inventory/grn') }}"
-                                class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                                :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                                :class="request()->is('reports/sales*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                                 <span
                                     class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
                                     :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
                                     Sales Report
                                 </span>
                             </a>
-                            <a href="{{ url('/inventory/grn') }}"
+                            <a href="{{ route('reports.stock') }}"
                                 class="flex items-center pl-11 pr-3 py-2.5 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors group"
-                                :class="request()->is('grn*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
+                                :class="request()->is('reports/stock*') ? 'bg-blue-50 text-blue-600 font-medium' : ''">
                                 <span
                                     class="whitespace-nowrap transition-all duration-300 overflow-hidden menu-item-transition"
                                     :class="$store.sidebar.collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'">

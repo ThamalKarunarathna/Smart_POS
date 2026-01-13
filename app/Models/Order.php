@@ -19,6 +19,9 @@ class Order extends Model
         'sscl_applicable',
         'sscl_amount',
         'vat_amount',
+        'outstanding_amount',
+        'paid_amount',
+        'balance_amount',
     ];
 
     public function items()

@@ -64,6 +64,7 @@ class OrderController extends Controller
             'vat_amount'      => 'nullable|numeric|min:0',
             'sscl_amount'     => 'nullable|numeric|min:0',
 
+
             'items'           => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.qty'     => 'required|numeric|min:0.001',
@@ -86,6 +87,10 @@ class OrderController extends Controller
                 'sscl_applicable' => !empty($validated['sscl_enabled']),
                 'vat_amount'      => $validated['vat_amount'] ?? 0,
                 'sscl_amount'     => $validated['sscl_amount'] ?? 0,
+                'outstanding_amount' => 0,
+                'paid_amount' => 0,
+                'balance_amount' => 0,
+
             ]);
 
             // 2) (IMPORTANT) If same item selected multiple times, aggregate qty per item
@@ -351,15 +356,30 @@ class OrderController extends Controller
     private function recalculateTotals(int $orderId): void
     {
         $subTotal = (float) OrderItem::where('order_id', $orderId)->sum('line_total');
+
         $order = Order::findOrFail($orderId);
+
         $discount = (float) ($order->discount ?? 0);
         $grand = max(0, $subTotal - $discount);
 
+        // Default values
+        $outstandingAmount = 0;
+        $balanceAmount = 0;
+
+        // If credit invoice
+        if ($order->credit_inv == 1) {
+            $outstandingAmount = round($grand, 2);
+            $balanceAmount = round($grand, 2);
+        }
+
         $order->update([
-            'sub_total'   => round($subTotal, 2),
-            'grand_total' => round($grand, 2),
+            'sub_total'           => round($subTotal, 2),
+            'grand_total'         => round($grand, 2),
+            'outstanding_amount'  => $outstandingAmount,
+            'balance_amount'      => $balanceAmount,
         ]);
     }
+
 
     private function createDeliveryNote(Order $order): void
     {

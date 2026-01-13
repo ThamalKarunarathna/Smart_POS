@@ -15,6 +15,8 @@ use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\BillEntryController;
 use App\Http\Controllers\PaymentVoucherController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ReportController;
 
 
 
@@ -66,6 +68,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::patch('/pos/orders/{id}/cancel', [OrderController::class, 'cancel']);
     Route::get('/pos/orders/{id}/print', [OrderController::class, 'print']);
+
+    // Receipts Routes
+    Route::get('/pos/receipts', [ReceiptController::class, 'index']);
+    Route::get('/pos/receipts/create', [ReceiptController::class, 'create']);
+    Route::post('/pos/receipts', [ReceiptController::class, 'store']);
+    Route::get('/pos/receipts/customer-orders', [ReceiptController::class, 'getCustomerUnpaidOrders']);
 
     // Delivery Notes Routes
     Route::get('/delivery-notes', [DeliveryNoteController::class, 'index'])->name('delivery_notes.index');
@@ -170,6 +178,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // IMPORTANT: use model binding param {voucher} to match controller approve(PaymentVoucher $voucher)
     Route::post('/finance/payment_vouchers/{voucher}/approve', [PaymentVoucherController::class, 'approve'])->name('payment_vouchers.approve');
     Route::post('/finance/payment_vouchers/{voucher}/reject', [PaymentVoucherController::class, 'reject'])->name('payment_vouchers.reject');
+
+    // Reports Routes
+    Route::get('/reports/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
+    Route::get('/reports/stock', [ReportController::class, 'stockReport'])->name('reports.stock');
 });
 
 require __DIR__ . '/auth.php';
