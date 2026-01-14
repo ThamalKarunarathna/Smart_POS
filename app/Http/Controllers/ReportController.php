@@ -60,4 +60,31 @@ class ReportController extends Controller
 
         return view('reports.stock', compact('items', 'allItems', 'itemId'));
     }
+
+    public function customerDetailsReport(Request $request)
+    {
+        $statusFilter = $request->input('status'); // 'all', 'active', 'inactive'
+
+        $query = Customer::query()
+            ->select('customers.*')
+            ->selectRaw('(SELECT COUNT(*) FROM orders WHERE orders.customer_id = customers.id AND orders.status = "confirmed") as total_orders')
+            ->selectRaw('(SELECT COALESCE(SUM(grand_total), 0) FROM orders WHERE orders.customer_id = customers.id AND orders.status = "confirmed") as total_sales')
+            ->selectRaw('(SELECT COALESCE(SUM(paid_amount), 0) FROM orders WHERE orders.customer_id = customers.id AND orders.status = "confirmed") as total_paid')
+            ->selectRaw('(SELECT COALESCE(SUM(balance_amount), 0) FROM orders WHERE orders.customer_id = customers.id AND orders.status = "confirmed") as total_balance');
+
+        if ($statusFilter === 'active') {
+            $query->where('is_active', true);
+        } elseif ($statusFilter === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        $customers = $query->orderBy('name')->get();
+
+        // Calculate summary statistics
+        $totalCustomers = Customer::count();
+        $activeCustomers = Customer::where('is_active', true)->count();
+        $inactiveCustomers = Customer::where('is_active', false)->count();
+
+        return view('reports.customer-details', compact('customers', 'statusFilter', 'totalCustomers', 'activeCustomers', 'inactiveCustomers'));
+    }
 }
